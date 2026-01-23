@@ -3,175 +3,37 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#2196f3">
+    <meta name="theme-color" content="#48c6ef">
     <title>DashCam</title>
-    <link rel="stylesheet" href="resources/app/framework7.bundle.min.css">
-    <link rel="stylesheet" href="resources/fonts/framework7-icons.css">
-    <link rel="stylesheet" href="resources/fonts/fontastic/styles.css">
-    <link rel="stylesheet" href="resources/app/font.css">
-    <link rel="stylesheet" href="resources/libraries/leaflet/leaflet.css">
-    <link rel="stylesheet" href="resources/app/my-app.css">
+
+    <!-- Framework7 CSS -->
+    <link rel="stylesheet" href="resources/fonts/f7/framework7-icons.css">
+
+    <link rel="stylesheet" href="resources/libraries/framework7/normalize.min.css">
+    <!--<link rel="stylesheet" href="resources/libraries/framework7/framework7.bundle.min.css">-->
+    <link rel="stylesheet" href="resources/libraries/framework7/framework7.bundle.css">
+    <!-- App CSS -->
+    <link rel="stylesheet" href="resources/app/app.css">
 </head>
 
 <body>
     <div id="app">
-        <div class="login-screen">
-            <!-- Default view-page layout -->
-            <div class="view">
-                <div class="page">
-                    <!-- page-content has additional login-screen content -->
-                    <div class="page-content login-screen-content">
-                        <div class="login-screen-title">My App</div>
-                        <!-- Login form -->
-                        <form>
-                            <div class="list">
-                                <ul>
-                                    <li class="item-content item-input">
-                                        <div class="item-inner">
-                                            <div class="item-title item-label">Username</div>
-                                            <div class="item-input-wrap">
-                                                <input type="text" name="username" placeholder="Username">
-                                                <span class="input-clear-button"></span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="item-content item-input">
-                                        <div class="item-inner">
-                                            <div class="item-title item-label">Password</div>
-                                            <div class="item-input-wrap">
-                                                <input type="password" name="password" placeholder="Password">
-                                                <span class="input-clear-button"></span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="list">
-                                <ul>
-                                    <li>
-                                        <a href="#" class="item-link list-button">Sign In</a>
-                                    </li>
-                                </ul>
-                                <div class="block-footer">Some text with login information.</div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="statusbar"></div>
-
-        <div class="panel panel-left panel-reveal panel-resizable" id="mainMenu">
-            <div class="list no-hairlines">
-                <div class="list-group">
-                    <ul>
-                        <li class="item-content list-panel-all no-padding margin-bottom">
-                            <div class="item-inner no-padding no-border">
-                                <a class="logoLink" href="#">
-                                    <img class="logoMenu" class="" src="resources/images/logo.png" alt="logo">
-                                </a>
-                            </div>
-                        </li>
-                        <li class="item-content no-padding" id="carcam">
-                            <div class="item-media">
-                                <i class="f7-icons icon-cam color-theme"></i>
-                            </div>
-                            <div class="item-inner no-border">
-                                <div class="item-text">
-                                    <div class="item-title">Carcam</div>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="item-content no-padding" id="info">
-                            <div class="item-media">
-                                <i class="f7-icons icon-info color-theme"></i>
-                            </div>
-                            <div class="item-inner no-border">
-                                <div class="item-text">
-                                    <div class="item-title">Info</div>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="item-content no-padding" id="gallery">
-                            <div class="item-media">
-                                <i class="f7-icons icon-gallery color-theme"></i>
-                            </div>
-                            <div class="item-inner no-border">
-                                <div class="item-text">
-                                    <div class="item-title">Phone Gallery</div>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="item-content no-padding" id="delete.cam">
-                            <div class="item-media">
-                                <i class="f7-icons icon-basket color-red"></i>
-                            </div>
-                            <div class="item-inner no-border">
-                                <div class="item-text">
-                                    <div class="item-title">Delete Cam</div>
-                                </div>
-                            </div>
-                        </li>
-
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="view view-main">
-            <div class="page home-page" data-name="home">
-                <div class="navbar">
-                    <div class="navbar-inner">
-                        <div class="left">
-                            <a class="panel-open" href="#">
-                                <i class="f7-icons icon-menu"></i>
-                            </a>
-                        </div>
-                        <div class="title">Home</div>
-                    </div>
-                </div>
-
-                <div class="toolbar toolbar-bottom">
-                    <div class="toolbar-inner">
-                        <a class="btn-cs" href="#" id='connectCam'>
-                            connect
-                        </a>
-                            <a class="btn-cs" href="#" id="testLive">test live</a>
-
-                    </div>
-                </div>
-
-                <div class="page-content">
-                    <div class="inner-content">
-                        <p><a href="/open.dashcam/">open</a></p>
-                        <p><a href="/air.dashcam/">open</a></p>
-
-
-                        <img class="main-bg" src="./resources/images/main.png" alt="main">
-                        <p class="text-content">You have not had any connections to the dashcam.</p>
-                        <p class="text-content">Select in the connection settings Wi-Fi your dashcam and click the CONNECT button.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        <!-- Main view -->
+        <div class="view view-main safe-areas"></div>
     </div>
 
-    <script type="text/javascript" src="cordova.js"></script>
-    <script type="text/javascript" src="resources/app/framework7.bundle.min.js"></script>
-    <script type="text/javascript" src="resources/libraries/jquery/jqury-2.2.4.min.js"></script>	
-    <script type="text/javascript" src="resources/libraries/jquery/jquery.signalR-2.2.0.min.js"></script>
-    <script type="text/javascript" src="resources/libraries/leaflet/leaflet.js"></script>
-    <script type="text/javascript" src="resources/libraries/moment/moment.min.js"></script>
-    <script type="text/javascript" src="resources/libraries/jClass.mini.js"></script>
-    <script type="text/javascript" src="resources/app/helper.js"></script>
-    <script type="text/javascript" src="resources/app/ProtocolHelpers.js"></script>
 
+    <!-- Framework7 JS -->
+    <script src="resources/libraries/framework7/framework7.bundle.min.js"></script>
+
+    <!-- App JS -->
+    <script src="resources/app/api.js"></script>
+    <script src="resources/app/store.js"></script>
     <script src="resources/app/routes.js"></script>
-    <script type="text/javascript" src="resources/libraries/easyXDM.js"></script>
-    <script type="text/javascript" src="resources/app/my-app.js"></script>
+    <script src="resources/app/app.js"></script>
 </body>
 
 </html>

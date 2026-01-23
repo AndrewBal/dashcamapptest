@@ -1,0 +1,170 @@
+<template>
+    <div class="page add-camera-page" data-name="add-camera">
+        <!-- Navbar -->
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="link icon-only back">
+                        <i class="f7-icons">chevron_left</i>
+                    </a>
+                </div>
+                <div class="title">Add Camera</div>
+                <div class="right">
+                    <a href="#" class="link" @click="saveCamera">
+                        <i class="f7-icons">checkmark</i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Instructions -->
+            <div class="block text-align-center">
+                <div class="instruction-icon">
+                    <i class="f7-icons">wifi</i>
+                </div>
+                <p class="text-color-gray">To add a new dashcam, first connect to its WiFi network, then enter the details below.</p>
+            </div>
+
+            <!-- Form -->
+            <form name="add-camera-form">
+                <div class="list no-hairlines-md">
+                    <ul>
+                        <li class="item-content item-input">
+                            <div class="item-media"><i class="f7-icons color-theme">textformat</i></div>
+                            <div class="item-inner">
+                                <div class="item-title item-label">Camera Name</div>
+                                <div class="item-input-wrap">
+                                    <input type="text" name="name" placeholder="My DashCam">
+                                </div>
+                            </div>
+                        </li>
+                        <li class="item-content item-input">
+                            <div class="item-media"><i class="f7-icons color-theme">globe</i></div>
+                            <div class="item-inner">
+                                <div class="item-title item-label">IP Address</div>
+                                <div class="item-input-wrap">
+                                    <input type="text" name="ip" placeholder="192.168.0.1" value="192.168.0.1" required>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="item-content item-input">
+                            <div class="item-media"><i class="f7-icons color-theme">wifi</i></div>
+                            <div class="item-inner">
+                                <div class="item-title item-label">WiFi SSID (optional)</div>
+                                <div class="item-input-wrap">
+                                    <input type="text" name="ssid" placeholder="DashCam_XXXX">
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+
+            <!-- How to Connect -->
+            <div class="block-title">How to Connect</div>
+            <div class="block">
+                <ol class="steps-list">
+                    <li>Power on your dashcam</li>
+                    <li>Go to your phone's WiFi settings</li>
+                    <li>Connect to the dashcam's WiFi network</li>
+                    <li>Return to this app and save the camera</li>
+                </ol>
+            </div>
+
+            <!-- Test Connection -->
+            <div class="block">
+                <a href="#" class="button button-outline button-large color-theme" @click="testConnection">
+                    Test Connection
+                </a>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    return {
+        methods: {
+            getFormData: function() {
+                var form = this.$el.find('form')[0];
+                return {
+                    name: form.elements.name.value,
+                    ip: form.elements.ip.value,
+                    ssid: form.elements.ssid.value
+                };
+            },
+            testConnection: function() {
+                var self = this;
+                var data = self.getFormData();
+                
+                if (!data.ip) {
+                    self.$app.dialog.alert('Please enter an IP address');
+                    return;
+                }
+                
+                // Temporarily set IP for testing
+                var originalIP = DASHCAM_API.config.ip;
+                DASHCAM_API.config.ip = data.ip;
+                
+                self.$app.preloader.show();
+                
+                DASHCAM_API.checkConnection().then(function(connected) {
+                    self.$app.preloader.hide();
+                    DASHCAM_API.config.ip = originalIP;
+                    
+                    if (connected) {
+                        self.$app.toast.show({
+                            text: 'Connection successful!',
+                            position: 'center',
+                            closeTimeout: 2000
+                        });
+                    } else {
+                        self.$app.dialog.alert('Could not connect. Check IP and WiFi connection.', 'Connection Failed');
+                    }
+                }).catch(function() {
+                    self.$app.preloader.hide();
+                    DASHCAM_API.config.ip = originalIP;
+                    self.$app.dialog.alert('Connection test failed', 'Error');
+                });
+            },
+            saveCamera: function() {
+                var self = this;
+                var data = self.getFormData();
+                
+                if (!data.name) {
+                    data.name = 'DashCam ' + (AppStore.state.cameras.length + 1);
+                }
+                
+                if (!data.ip) {
+                    self.$app.dialog.alert('Please enter an IP address');
+                    return;
+                }
+                
+                // Validate IP
+                var ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+                if (!ipRegex.test(data.ip)) {
+                    self.$app.dialog.alert('Please enter a valid IP address');
+                    return;
+                }
+                
+                // Save camera
+                var newCamera = AppStore.addCamera(data);
+                AppStore.selectCamera(newCamera);
+                
+                self.$app.toast.show({
+                    text: 'Camera saved!',
+                    position: 'center',
+                    closeTimeout: 1500
+                });
+                
+                mainView.router.back();
+            }
+        },
+        on: {
+            pageInit: function(e, page) {
+            }
+        }
+    };
+</script>

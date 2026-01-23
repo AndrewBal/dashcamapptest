@@ -1,0 +1,148 @@
+<template>
+    <div class="page home-page" data-name="home">
+        <!-- Navbar -->
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="/panel-left/" class="link icon-only">
+                        <i class="f7-icons">bars</i>
+                    </a>
+                </div>
+                <div class="title">Home</div>
+                <div class="right">
+                    <a href="#" class="link icon-only" @click="openCameraSelector">
+                        <i class="f7-icons">plus_circle</i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toolbar Bottom -->
+        <div class="toolbar toolbar-bottom no-hairline">
+            <div class="toolbar-inner toolbar-buttons">
+                <a href="#" class="btn-cs" @click="handleConnect">
+                    {{#if IsConnected}}CONNECTED{{else}}CONNECT{{/if}}
+                </a>
+                <a href="#" class="btn-cs" @click="handleLive">
+                    LIVE
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Camera Selector -->
+            <div class="list no-hairlines no-margin-top">
+                <ul>
+                    <li>
+                        <a href="#" class="item-link item-content" @click="openCameraSelector">
+                            <div class="item-media"><i class="f7-icons color-theme">camera_fill</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Select Camera</div>
+                                <div class="item-after">{{SelectedCameraName}}</div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Connection Status -->
+                <div class="connection-status">
+                    <span class="status-dot {{#if IsConnected}}connected{{else}}disconnected{{/if}}"></span>
+                    <span>{{#if IsConnected}}Connected{{else}}Not Connected{{/if}}</span>
+                </div>
+
+                <!-- Camera Icon -->
+                <div class="camera-icon-wrapper">
+                    <svg class="main-bg" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="30" y="30" width="140" height="90" rx="10" stroke="#48c6ef" stroke-width="4" fill="none" opacity="0.3"/>
+                        <circle cx="100" cy="75" r="30" stroke="#6f86d6" stroke-width="4" fill="none" opacity="0.5"/>
+                        <circle cx="100" cy="75" r="15" stroke="#48c6ef" stroke-width="3" fill="none" opacity="0.7"/>
+                        <rect x="20" y="60" width="15" height="30" rx="3" stroke="#6f86d6" stroke-width="3" fill="none" opacity="0.3"/>
+                        <rect x="165" y="60" width="15" height="30" rx="3" stroke="#6f86d6" stroke-width="3" fill="none" opacity="0.3"/>
+                    </svg>
+                </div>
+
+                <!-- Instructions -->
+                {{#if IsConnected}}
+                <p class="text-content">Camera connected. You can now view live stream or access the gallery.</p>
+                {{else}}
+                <p class="text-content">You have not had any connections to the dashcam.</p>
+                <p class="text-content">Select in the connection settings Wi-Fi your dashcam and click the CONNECT button.</p>
+                {{/if}}
+            </div>
+
+            <!-- Quick Actions (visible when connected) -->
+            {{#if IsConnected}}
+            <div class="action-buttons">
+                <a href="#" class="action-btn" @click="takePhoto">
+                    <i class="f7-icons">camera</i>
+                </a>
+                <a href="/live/" class="action-btn large">
+                    <i class="f7-icons">play_fill</i>
+                </a>
+                <a href="/gallery/" class="action-btn">
+                    <i class="f7-icons">photo_on_rectangle</i>
+                </a>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</template>
+
+<script>
+    return {
+        data: function() {
+            var camera = AppStore.state.selectedCamera;
+            return {
+                IsConnected: AppStore.state.isConnected,
+                SelectedCameraName: camera ? camera.name : 'None'
+            };
+        },
+        methods: {
+            handleConnect: function() {
+                var self = this;
+                self.$app.methods.connectToCamera().then(function(connected) {
+                    if (connected) {
+                        self.$setState({
+                            IsConnected: true
+                        });
+                    }
+                });
+            },
+            handleLive: function() {
+                this.$app.methods.openLiveStream();
+            },
+            openCameraSelector: function() {
+                this.$app.methods.openCameraSelector();
+            },
+            takePhoto: function() {
+                this.$app.methods.takePhoto();
+            },
+            updateState: function() {
+                var camera = AppStore.state.selectedCamera;
+                this.$setState({
+                    IsConnected: AppStore.state.isConnected,
+                    SelectedCameraName: camera ? camera.name : 'None'
+                });
+            }
+        },
+        on: {
+            pageInit: function(e, page) {
+                var self = this;
+                // Update state periodically
+                self.interval = setInterval(function() {
+                    self.updateState();
+                }, 3000);
+            },
+            pageBeforeRemove: function() {
+                if (this.interval) {
+                    clearInterval(this.interval);
+                }
+            }
+        }
+    };
+</script>

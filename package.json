@@ -14,14 +14,19 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "cordova-android": "^14.0.1",
-    "cordova-plugin-inappbrowser": "^6.0.0"
+    "cordova-plugin-inappbrowser": "^6.0.0",
+    "cordova-plugin-rtsp-player": "file:../../cordova-plugins/cordova-plugin-rtsp-player"
   },
   "cordova": {
     "plugins": {
-      "cordova-plugin-inappbrowser": {}
+      "cordova-plugin-inappbrowser": {},
+      "cordova-plugin-rtsp-player": {}
     },
     "platforms": [
       "android"
     ]
+  },
+  "dependencies": {
+    "framework7": "^9.0.2"
   }
 }

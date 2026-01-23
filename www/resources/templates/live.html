@@ -1,0 +1,130 @@
+<template>
+    <div class="page live-page no-toolbar" data-name="live">
+        <!-- Navbar -->
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="link back">
+                        <i class="f7-icons">chevron_left</i>
+                    </a>
+                </div>
+                <div class="title">Live Stream</div>
+                <div class="right">
+                    ${isRecording ? `
+                    <div class="recording-indicator">
+                        <span class="dot"></span>
+                        <span>REC</span>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <div class="video-container">
+                <!-- Camera Switch Button -->
+                <a href="#" class="camera-switch" @click="switchCamera">
+                    <i class="f7-icons">camera_rotate</i>
+                    <span>${currentCamera === 'front' ? 'Front' : 'Rear'}</span>
+                </a>
+
+                <!-- Video Placeholder / Stream -->
+                <div class="video-placeholder">
+                    <i class="f7-icons">video_fill</i>
+                    <p>RTSP Stream</p>
+                    <p class="text-muted" style="font-size: 12px; margin-top: 10px;">
+                        ${streamUrl}
+                    </p>
+                    <a href="#" class="btn-cs btn-cs-small" style="margin-top: 20px;" @click="openExternalPlayer">
+                        Open in Player
+                    </a>
+                </div>
+
+                <!-- Controls Overlay -->
+                <div class="controls-overlay">
+                    <div class="controls-row">
+                        <!-- Photo Button -->
+                        <a href="#" class="control-btn" @click="takePhoto">
+                            <i class="f7-icons">camera</i>
+                        </a>
+                        
+                        <!-- Record Button -->
+                        <a href="#" class="control-btn primary ${isRecording ? 'recording' : ''}" @click="toggleRecording">
+                            <i class="f7-icons">${isRecording ? 'stop_fill' : 'circle_fill'}</i>
+                        </a>
+                        
+                        <!-- Gallery Button -->
+                        <a href="/gallery/" class="control-btn">
+                            <i class="f7-icons">photo_on_rectangle</i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+    .live-page .control-btn.recording {
+        background: #ff3b30;
+    }
+    
+    .live-page .control-btn.recording i {
+        color: white;
+    }
+</style>
+
+<script>
+    export default function(props, { $f7, $on, $update }) {
+        let currentCamera = AppStore.state.currentCamera;
+        let isRecording = AppStore.state.isRecording;
+        let streamUrl = AppStore.getCurrentStreamUrl();
+
+        $on('pageInit', () => {
+            // Check recording status on init
+            updateState();
+        });
+
+        function updateState() {
+            currentCamera = AppStore.state.currentCamera;
+            isRecording = AppStore.state.isRecording;
+            streamUrl = AppStore.getCurrentStreamUrl();
+            $update();
+        }
+
+        function switchCamera() {
+            currentCamera = AppStore.switchCamera();
+            streamUrl = AppStore.getCurrentStreamUrl();
+            $update();
+            
+            $f7.toast.show({
+                text: `Switched to ${currentCamera} camera`,
+                position: 'center',
+                closeTimeout: 1500
+            });
+        }
+
+        function takePhoto() {
+            window.takePhoto();
+        }
+
+        async function toggleRecording() {
+            await window.toggleRecording();
+            isRecording = AppStore.state.isRecording;
+            $update();
+        }
+
+        function openExternalPlayer() {
+            // For Cordova apps, use InAppBrowser
+            if (typeof cordova !== 'undefined' && cordova.InAppBrowser) {
+                cordova.InAppBrowser.open(streamUrl, '_system');
+            } else {
+                // For web, try to open in new tab
+                window.open(streamUrl, '_blank');
+            }
+        }
+
+        return $render;
+    }
+</script>

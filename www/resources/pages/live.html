@@ -1,0 +1,114 @@
+<template>
+    <div class="page live-page" data-name="live">
+        <!-- Navbar -->
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="link icon-only back">
+                        <i class="f7-icons">chevron_left</i>
+                    </a>
+                </div>
+                <div class="title">Live Stream</div>
+                <div class="right">
+                    {{#if IsRecording}}
+                    <div class="recording-indicator">
+                        <span class="dot"></span>
+                        <span>REC</span>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content bg-color-black">
+            <div class="video-container">
+                <!-- Camera Switch -->
+                <a href="#" class="camera-switch" @click="switchCamera">
+                    <i class="f7-icons">camera_rotate</i>
+                    <span>{{CurrentCameraLabel}}</span>
+                </a>
+
+                <!-- Video Placeholder -->
+                <div class="video-placeholder">
+                    <i class="f7-icons">video_fill</i>
+                    <p>RTSP Stream</p>
+                    <p class="stream-url">{{StreamUrl}}</p>
+                    <a href="#" class="btn-cs btn-cs-small margin-top" @click="openExternalPlayer">
+                        Open in Player
+                    </a>
+                </div>
+
+                <!-- Controls -->
+                <div class="controls-overlay">
+                    <div class="controls-row">
+                        <a href="#" class="control-btn" @click="takePhoto">
+                            <i class="f7-icons">camera</i>
+                        </a>
+                        <a href="#" class="control-btn primary {{#if IsRecording}}recording{{/if}}" @click="toggleRecording">
+                            <i class="f7-icons">{{#if IsRecording}}stop_fill{{else}}circle_fill{{/if}}</i>
+                        </a>
+                        <a href="/gallery/" class="control-btn">
+                            <i class="f7-icons">photo_on_rectangle</i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    return {
+        data: function() {
+            return {
+                CurrentCamera: AppStore.state.currentCamera,
+                CurrentCameraLabel: AppStore.state.currentCamera === 'front' ? 'Front' : 'Rear',
+                StreamUrl: AppStore.getCurrentStreamUrl(),
+                IsRecording: AppStore.state.isRecording
+            };
+        },
+        methods: {
+            switchCamera: function() {
+                var self = this;
+                var newCamera = AppStore.switchCamera();
+                self.$setState({
+                    CurrentCamera: newCamera,
+                    CurrentCameraLabel: newCamera === 'front' ? 'Front' : 'Rear',
+                    StreamUrl: AppStore.getCurrentStreamUrl()
+                });
+                
+                self.$app.toast.show({
+                    text: 'Switched to ' + (newCamera === 'front' ? 'Front' : 'Rear') + ' camera',
+                    position: 'center',
+                    closeTimeout: 1500
+                });
+            },
+            takePhoto: function() {
+                this.$app.methods.takePhoto();
+            },
+            toggleRecording: function() {
+                var self = this;
+                self.$app.methods.toggleRecording().then(function(isRecording) {
+                    self.$setState({
+                        IsRecording: isRecording
+                    });
+                });
+            },
+            openExternalPlayer: function() {
+                var url = this.StreamUrl;
+                if (window.cordova && cordova.InAppBrowser) {
+                    cordova.InAppBrowser.open(url, '_system');
+                } else {
+                    window.open(url, '_blank');
+                }
+            }
+        },
+        on: {
+            pageInit: function(e, page) {
+                var self = this;
+            }
+        }
+    };
+</script>

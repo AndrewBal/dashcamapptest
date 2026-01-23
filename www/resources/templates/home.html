@@ -1,0 +1,147 @@
+<template>
+    <div class="page home-page" data-name="home">
+        <!-- Navbar -->
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="link panel-open" data-panel="left">
+                        <i class="f7-icons">bars</i>
+                    </a>
+                </div>
+                <div class="title">Home</div>
+                <div class="right">
+                    <a href="#" class="link" @click="openCameraSelector">
+                        <i class="f7-icons">plus_circle</i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar toolbar-bottom">
+            <div class="toolbar-inner">
+                <a href="#" class="btn-cs" @click="handleConnect" id="connectBtn">
+                    ${isConnected ? 'CONNECTED' : 'CONNECT'}
+                </a>
+                <a href="#" class="btn-cs" @click="handleLive" id="liveBtn">
+                    LIVE
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Camera Selector -->
+            <div class="camera-selector-block">
+                <div class="list no-hairlines no-margin">
+                    <ul>
+                        <li class="camera-select-item">
+                            <a href="#" class="item-link smart-select-opener" @click="openCameraSelector">
+                                <div class="item-content">
+                                    <div class="item-media">
+                                        <i class="f7-icons color-theme">camera_fill</i>
+                                    </div>
+                                    <div class="item-inner">
+                                        <div class="item-title">Select Camera</div>
+                                        <div class="item-after">${selectedCameraName}</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Connection Status -->
+                <div class="connection-status">
+                    <span class="status-dot ${isConnected ? 'connected' : 'disconnected'}"></span>
+                    <span>${isConnected ? 'Connected' : 'Not Connected'}</span>
+                </div>
+
+                <!-- Camera Icon -->
+                <svg class="main-bg" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="30" y="30" width="140" height="90" rx="10" stroke="#48c6ef" stroke-width="4" fill="none" opacity="0.3"/>
+                    <circle cx="100" cy="75" r="30" stroke="#6f86d6" stroke-width="4" fill="none" opacity="0.5"/>
+                    <circle cx="100" cy="75" r="15" stroke="#48c6ef" stroke-width="3" fill="none" opacity="0.7"/>
+                    <rect x="20" y="60" width="15" height="30" rx="3" stroke="#6f86d6" stroke-width="3" fill="none" opacity="0.3"/>
+                    <rect x="165" y="60" width="15" height="30" rx="3" stroke="#6f86d6" stroke-width="3" fill="none" opacity="0.3"/>
+                </svg>
+
+                <!-- Instructions -->
+                <p class="text-content" id="statusText">
+                    ${isConnected 
+                        ? 'Camera connected. You can now view live stream or access the gallery.'
+                        : 'You have not had any connections to the dashcam.'}
+                </p>
+                <p class="text-content" ${isConnected ? 'style="display:none"' : ''}>
+                    Select in the connection settings Wi-Fi your dashcam and click the CONNECT button.
+                </p>
+            </div>
+
+            <!-- Quick Actions (visible when connected) -->
+            ${isConnected ? `
+            <div class="action-buttons">
+                <a href="#" class="action-btn" @click="takePhoto" title="Take Photo">
+                    <i class="f7-icons">camera</i>
+                </a>
+                <a href="/live/" class="action-btn large" title="Live Stream">
+                    <i class="f7-icons">play_fill</i>
+                </a>
+                <a href="/gallery/" class="action-btn" title="Gallery">
+                    <i class="f7-icons">photo_on_rectangle</i>
+                </a>
+            </div>
+            ` : ''}
+        </div>
+    </div>
+</template>
+
+<script>
+    export default function(props, { $f7, $on, $update }) {
+        let isConnected = AppStore.state.isConnected;
+        let selectedCameraName = AppStore.state.selectedCamera?.name || 'None';
+
+        // Update state periodically
+        let interval;
+        
+        $on('pageInit', () => {
+            updateState();
+            interval = setInterval(updateState, 3000);
+        });
+
+        $on('pageBeforeRemove', () => {
+            if (interval) clearInterval(interval);
+        });
+
+        function updateState() {
+            const newConnected = AppStore.state.isConnected;
+            const newCameraName = AppStore.state.selectedCamera?.name || 'None';
+            
+            if (newConnected !== isConnected || newCameraName !== selectedCameraName) {
+                isConnected = newConnected;
+                selectedCameraName = newCameraName;
+                $update();
+            }
+        }
+
+        function handleConnect() {
+            connectToCamera();
+        }
+
+        function handleLive() {
+            openLiveStream();
+        }
+
+        function openCameraSelector() {
+            window.openCameraSelector();
+        }
+
+        function takePhoto() {
+            window.takePhoto();
+        }
+
+        return $render;
+    }
+</script>

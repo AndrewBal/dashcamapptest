@@ -1,0 +1,191 @@
+<template>
+    <div class="page settings-page" data-name="settings">
+        <!-- Navbar -->
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="link panel-open" data-panel="left">
+                        <i class="f7-icons">bars</i>
+                    </a>
+                </div>
+                <div class="title">Settings</div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Camera Settings -->
+            <div class="block-title">Camera</div>
+            <div class="list">
+                <ul>
+                    <li>
+                        <a href="/camera-settings/" class="item-link item-content">
+                            <div class="item-media">
+                                <i class="f7-icons">camera_fill</i>
+                            </div>
+                            <div class="item-inner">
+                                <div class="item-title">Dashcam Settings</div>
+                                <div class="item-after">
+                                    <i class="f7-icons">chevron_right</i>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/wifi-settings/" class="item-link item-content">
+                            <div class="item-media">
+                                <i class="f7-icons">wifi</i>
+                            </div>
+                            <div class="item-inner">
+                                <div class="item-title">WiFi Settings</div>
+                                <div class="item-after">
+                                    <i class="f7-icons">chevron_right</i>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Recording Settings -->
+            <div class="block-title">Recording</div>
+            <div class="list">
+                <ul>
+                    <li>
+                        <div class="item-content">
+                            <div class="item-media">
+                                <i class="f7-icons">mic_fill</i>
+                            </div>
+                            <div class="item-inner">
+                                <div class="item-title">Sound Recording</div>
+                                <div class="item-after">
+                                    <label class="toggle toggle-init">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-icon"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="#" class="item-link item-content" @click="showResolutionPicker">
+                            <div class="item-media">
+                                <i class="f7-icons">rectangle_on_rectangle</i>
+                            </div>
+                            <div class="item-inner">
+                                <div class="item-title">Resolution</div>
+                                <div class="item-after">${resolution}</div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Saved Cameras -->
+            <div class="block-title">Saved Cameras</div>
+            <div class="list">
+                <ul>
+                    ${cameras.length > 0 ? cameras.map(camera => `
+                        <li class="swipeout">
+                            <div class="swipeout-content item-content">
+                                <div class="item-media">
+                                    <i class="f7-icons">camera_viewfinder</i>
+                                </div>
+                                <div class="item-inner">
+                                    <div class="item-title">${camera.name}</div>
+                                    <div class="item-after">${camera.ip}</div>
+                                </div>
+                            </div>
+                            <div class="swipeout-actions-right">
+                                <a href="#" class="swipeout-delete" data-confirm="Delete this camera?" data-id="${camera.id}">
+                                    Delete
+                                </a>
+                            </div>
+                        </li>
+                    `).join('') : `
+                        <li>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title text-muted">No cameras saved</div>
+                                </div>
+                            </div>
+                        </li>
+                    `}
+                    <li>
+                        <a href="/add-camera/" class="item-link item-content">
+                            <div class="item-media">
+                                <i class="f7-icons color-theme">plus_circle_fill</i>
+                            </div>
+                            <div class="item-inner">
+                                <div class="item-title color-theme">Add New Camera</div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- About -->
+            <div class="block-title">About</div>
+            <div class="list">
+                <ul>
+                    <li>
+                        <div class="item-content">
+                            <div class="item-media">
+                                <i class="f7-icons">info_circle</i>
+                            </div>
+                            <div class="item-inner">
+                                <div class="item-title">Version</div>
+                                <div class="item-after">1.0.0</div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    export default function(props, { $f7, $on, $update, $el }) {
+        let cameras = AppStore.state.cameras;
+        let resolution = '1080P';
+
+        $on('pageInit', () => {
+            // Handle swipeout delete
+            $el.value.querySelectorAll('.swipeout-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(btn.dataset.id);
+                    if (id) {
+                        AppStore.removeCamera(id);
+                        cameras = AppStore.state.cameras;
+                        $update();
+                    }
+                });
+            });
+        });
+
+        function showResolutionPicker() {
+            $f7.dialog.create({
+                title: 'Resolution',
+                buttons: [
+                    { text: '720P', onClick: () => setResolution('720P') },
+                    { text: '1080P', onClick: () => setResolution('1080P') },
+                    { text: 'Cancel', color: 'red' }
+                ],
+                verticalButtons: true
+            }).open();
+        }
+
+        function setResolution(res) {
+            resolution = res;
+            $update();
+            $f7.toast.show({
+                text: `Resolution set to ${res}`,
+                position: 'center',
+                closeTimeout: 1500
+            });
+        }
+
+        return $render;
+    }
+</script>

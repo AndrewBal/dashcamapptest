@@ -1,0 +1,713 @@
+/* MAIN STYLES */
+
+.btn-cs {
+    width: 100%;
+    max-width: 300px;
+    height: 57px;
+    background: linear-gradient(to right, #48c6ef, #6f86d6);
+    color: white;
+    font-size: 19px;
+    text-transform: uppercase;
+    text-align: center;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    -webkit-box-shadow: 0px 0px 20px -9px rgba(111, 134, 214, 1);
+    -moz-box-shadow: 0px 0px 20px -9px rgba(111, 134, 214, 1);
+    box-shadow: 0px 0px 20px -9px rgba(111, 134, 214, 1);
+    font-family: 'product_sansbold';
+}
+
+.navbar {
+    background: linear-gradient(to right, #48c6ef, #6f86d6);
+    color: white;
+    font-size: 19px;
+}
+
+.page input:-internal-autofill-selected {
+    background-color: transparent !important;
+    background-image: none !important;
+    color: rgb(0, 0, 0) !important;
+}
+
+.color-theme {
+    color: #6F86D6;
+}
+
+.color-red {
+    color: #BC2132;
+}
+
+.page {
+    color: #333;
+    background-color: white;
+}
+
+input[type='radio']:checked {
+    background-color: black;
+}
+
+.no-border:after {
+    background-color: transparent !important;
+}
+
+.no-border:before {
+    background-color: transparent !important;
+}
+
+label.item-checkbox input[type=checkbox]:checked~.icon-checkbox {
+    background-color: #6F86D6 !important;
+    border-color: #6F86D6 !important;
+}
+
+.ios .toggle input[type=checkbox]:checked+.toggle-icon {
+    background-color: #6F86D6 !important;
+}
+
+.md .toggle input[type=checkbox]:checked+.toggle-icon:after {
+    background-color: #6F86D6 !important;
+}
+
+.border-left {
+    border-left: 1px solid #ccc;
+}
+
+.border-right {
+    border-right: 1px solid #ccc;
+}
+
+.border-top {
+    border-top: 1px solid #ccc;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #ccc;
+}
+
+
+/* START PAGE */
+
+.start-page {
+    background-image: url(../images/bg.png);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.start-page .logo-block {
+    background-color: white;
+    -webkit-box-shadow: 0px 0px 20px -9px rgba(111, 134, 214, 1);
+    -moz-box-shadow: 0px 0px 20px -9px rgba(111, 134, 214, 1);
+    box-shadow: 0px 0px 20px -9px rgba(111, 134, 214, 1);
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 20px;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    -ms-border-radius: 20px;
+    -o-border-radius: 20px;
+}
+
+.start-page img {
+    max-width: 450px;
+    width: 100%;
+}
+
+
+/* LOGIN PAGE */
+
+.input-cs {
+    height: 57px;
+    width: 100%;
+    max-width: 450px;
+    border: none;
+}
+
+.input-inner-cs {
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 6px;
+}
+
+.pass-input-cs {
+    position: relative;
+}
+
+.login-caption {
+    font-size: 32px;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 0;
+}
+
+.form-login .content-block {
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.form-login .btn-cs {
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+#forgout {
+    text-transform: uppercase;
+    font-size: 24px;
+    text-align: center;
+}
+
+#account {
+    border-bottom: 1px solid #ccc;
+}
+
+
+/* LOGO MENU */
+
+#mainMenu {
+    background: linear-gradient(to right, #48c6ef, #6f86d6);
+}
+
+#mainMenu .logoMenu {
+    width: 100%;
+    max-width: 300px;
+}
+
+#mainMenu .logoLink {
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 15px;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    -ms-border-radius: 15px;
+    -o-border-radius: 15px;
+}
+
+#mainMenu ul {
+    background-color: transparent;
+    padding: 15px;
+}
+
+#mainMenu ul .item-content i {
+    color: #fff;
+}
+
+#mainMenu ul .item-content .item-title {
+    color: #fff;
+    font-family: 'product_reg';
+    font-size: 19px;
+}
+
+
+/* MENU */
+
+.menuList {
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.menuList .caption-cs {
+    text-align: center;
+    font-size: 19px;
+    font-family: 'product_sansbold';
+    color: #4D4D4D;
+    margin: 15px 0;
+}
+
+.menuList li {
+    list-style-type: none;
+    text-align: center;
+    padding: 35px 15px;
+}
+
+.menuList>.row {
+    padding: 0;
+}
+
+
+/* HOME PAGE */
+
+.navbar .left a {
+    padding: 0 16px;
+}
+
+#app .navbar i {
+    color: white;
+    font-size: 32px;
+    margin-top: 10px;
+}
+
+#app .navbar i.icon-left {
+    color: white;
+    font-size: 19px;
+    margin-top: 3px;
+}
+
+.toolbar-bottom {
+    height: 90px;
+    background-color: transparent;
+}
+
+.toolbar-bottom::after {
+    display: none;
+}
+
+.toolbar-bottom::before {
+    display: none;
+}
+
+.toolbar-bottom .toolbar-inner {
+    padding: 15px;
+}
+
+.toolbar-bottom .btn-cs {
+    color: white;
+}
+
+.home-page .inner-content {
+    text-align: center;
+}
+
+.home-page .main-bg {
+    text-align: center;
+    width: 70%;
+    max-width: 450px;
+    padding: 0 15px;
+    box-sizing: border-box;
+    margin: 70px auto 40px;
+    display: block;
+}
+
+.home-page .text-content {
+    text-align: center;
+    max-width: 290px;
+    margin: 0 auto;
+    padding: 0 15px;
+    font-family: 'product_reg';
+    font-size: 16px;
+}
+
+
+/* OPEN DASHCAM */
+
+.open-cam-list .item-media-inner {
+    background: linear-gradient(to right, #48c6ef, #6f86d6);
+    color: white;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    -o-border-radius: 50%;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.open-dashcam-page .open-title {
+    text-align: center;
+}
+
+.air-dashcam-page .right a {
+    padding: 0 15px;
+}
+
+.air-dashcam-page .right .icon-gallery {
+    font-size: 23px !important;
+}
+
+.air-dashcam-page .right .icon-setting {
+    font-size: 23px !important;
+}
+
+
+/*DASHCAM VIDEO*/
+
+.dashcam-video .navbar a {
+    padding: 0 15px;
+}
+
+.dashcam-video .navbar .icon-done {
+    font-size: 23px !important;
+}
+
+
+
+/*INFO PAGES */
+
+.infoListBlock ul {
+    padding: 0;
+}
+
+.infoListBlock ul li {
+    list-style-type: none;
+    text-align: center;
+    padding: 35px 15px;
+}
+
+.infoListBlock ul li .item-text {
+    font-family: 'product_reg';
+    font-size: 19px;
+    height: 50px;
+    color: #333;
+}
+
+
+/* GALLERY PHOTO*/
+
+.gallery-photo .navbar a {
+    padding: 0 15px;
+ }
+ .gallery-photo .navbar .icon-done {
+     font-size: 23px !important;
+ }
+ .gallery-photo .navbar .icon-sort {
+     font-size: 23px !important;
+ }
+
+#toolbar-menu {
+    /* top: -2px; */
+    background: linear-gradient(to right, #48c6ef, #6f86d6);
+    color: white;
+}
+
+#app .tabbar .tab-link-highlight {
+    bottom: 7px;
+    /* width: 30% !important; */
+    background-color: #fff !important;
+}
+
+.tabbar a.tab-link,
+.tabbar-labels a.tab-link {
+    color: white;
+}
+
+.ios .tab-link-active {
+    border-bottom: 2px solid rgb(78, 23, 23);
+}
+
+.navbar:after {
+    background-color: transparent !important;
+}
+
+
+/* GALLERY VIDEO */
+.gallery .navbar a {
+   padding: 0 15px;
+}
+.gallery .navbar .icon-done {
+    font-size: 23px !important;
+}
+.gallery .navbar .icon-sort {
+    font-size: 23px !important;
+}
+
+
+.video-list .video-item-media {
+    position: relative;
+    padding-bottom: 0;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -ms-border-radius: 4px;
+    -o-border-radius: 4px;
+}
+
+.video-list .video-item-media img{
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -ms-border-radius: 4px;
+    -o-border-radius: 4px;
+}
+
+.video-list .item-media-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background-color: rgba(0,0,0,.7);
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0 7px;
+}
+
+.video-list .item-media-bottom .item-media-time{
+    color: white;
+    font-size: 12px;
+}
+
+.video-list .item-media-bottom .item-media-quality{
+    color: white;
+    font-size: 12px;
+}
+
+/* DELETE */
+
+.delete-cam-list .item-media-inner {
+    background: linear-gradient(to right, #48c6ef, #6f86d6);
+    color: white;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    -o-border-radius: 50%;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.delete-cam-page .page-content .delete-title {
+    text-align: center;
+    font-size: 19px;
+    font-family: 'product_reg';
+    color: #333;
+}
+
+.delete-cam-list {
+    color: #333;
+    font-family: 'product_reg';
+    font-size: 19px;
+}
+
+#toolbarDeleteCam {
+    background-color: #fff;
+}
+
+
+/* DASHCAM SETTING */
+
+.setting-page .icon-right {
+    font-size: 16px;
+    color: #6F86D6;
+}
+
+.setting-page .navbar .icon-left {
+    font-size: 16px;
+    color: white !important;
+}
+
+.setting-list ul {
+    padding: 15px;
+    margin: 0;
+}
+
+.setting-list ul li {
+    list-style-type: none;
+}
+
+.setting-page .item-content .item-inner {
+    padding: 15px 0;
+}
+
+.setting-page .item-content .item-inner.border-bottom {
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.item-bottom-text {
+    width: 100%;
+}
+
+.setting-page .item-content a {
+    color: #333;
+    font-size: 19px;
+    line-height: 34px;
+}
+
+.setting-page .item-caption {
+    color: #333;
+    font-size: 19px;
+    line-height: 34px;
+    margin-right: 15px;
+}
+
+.setting-page .item-bottom-text {
+    color: #808080;
+    font-size: 16px;
+    line-height: 25px;
+    margin-top: 5px;
+    margin-bottom: 0px;
+}
+
+
+/* WIFI PAGE */
+
+
+.wifi-page .item-inner-wrap {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.wifi-page .item-inner-wrap .caption-cs {
+    text-align: center;
+    padding: 0;
+    margin: 0;
+}
+
+
+.wifi-page .md .input:not(.input-outline):after,
+.md .item-input:not(.item-input-outline) .item-input-wrap:after {
+    display: none;
+}
+
+.wifi-page .item-input {
+    border-bottom: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+}
+
+.wifi-page input[name="wifiPassword"] {
+    color: #6F86D6;
+}
+
+.wifi-page .list .item-media {
+    height: 52px;
+}
+
+
+/* INSTALLATION PAGE*/
+
+.installation-img {
+    width: 100%;
+}
+
+.installation-img2 {
+    width: 100%;
+}
+
+.installation-page .block p {
+    font-size: 16px;
+    font-family: 'product_reg';
+    color: #808080;
+}
+
+
+/* SUPPORT INFO PAGE */
+
+.support-list .caption-cs {
+    text-align: center;
+}
+
+
+/* FAQ PAGE */
+
+.faq-list .icon-right {
+    font-size: 19px;
+    margin-top: 6px;
+    color: #6F86D6;
+}
+
+.faq-list a {
+    color: #333;
+    font-size: 19px;
+}
+
+
+/* EQUIPMENT FAQ PAGE */
+
+.equipment-list .item-title {
+    white-space: normal;
+}
+
+.equipment-list a {
+    color: #333;
+    font-size: 19px;
+}
+
+.equipment-list li .block p {
+    font-size: 16px;
+    font-family: 'product_reg';
+    color: #808080;
+}
+
+
+/* CONNECTION FAQ PAGE */
+
+.connection-list .item-title {
+    white-space: normal;
+}
+
+.connection-list a {
+    color: #333;
+    font-size: 19px;
+}
+
+.connection-list li .block p {
+    font-size: 16px;
+    font-family: 'product_reg';
+    color: #808080;
+}
+
+
+/* TF CARD FAQ PAGE */
+
+.tfcard-list .item-title {
+    white-space: normal;
+}
+
+.tfcard-list a {
+    color: #333;
+    font-size: 19px;
+}
+
+.tfcard-page .item-bytes {
+    color: #6A8DD9;
+}
+
+.tfcard-list li .block p {
+    font-size: 16px;
+    font-family: 'product_reg';
+    color: #808080;
+}
+
+
+/* RECORDING FAQ PAGE */
+
+.recording-list .item-title {
+    white-space: normal;
+}
+
+.recording-list a {
+    color: #333;
+    font-size: 19px;
+}
+
+.recording-list li .block p {
+    font-size: 16px;
+    font-family: 'product_reg';
+    color: #808080;
+}
+
+
+/* QUESTIONS FAQ PAGE */
+
+.questions-list .item-title {
+    white-space: normal;
+}
+
+.questions-list a {
+    color: #333;
+    font-size: 19px;
+}
+
+.questions-list li .block p {
+    font-size: 16px;
+    font-family: 'product_reg';
+    color: #808080;
+}

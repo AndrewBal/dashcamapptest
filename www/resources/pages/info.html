@@ -2,19 +2,20 @@
     <div class="page info-page" data-name="info">
         <!-- Navbar -->
         <div class="navbar">
+            <div class="navbar-bg"></div>
             <div class="navbar-inner">
                 <div class="left">
-                    <a href="#" class="link panel-open" data-panel="left">
+                    <a href="/panel-left/" class="link icon-only">
                         <i class="f7-icons">bars</i>
                     </a>
                 </div>
-                <div class="title">Info</div>
+                <div class="title">Info & Help</div>
             </div>
         </div>
 
         <!-- Page Content -->
         <div class="page-content">
-            <!-- FAQ Section -->
+            <!-- FAQ -->
             <div class="block-title">FAQ</div>
             <div class="list accordion-list">
                 <ul>
@@ -43,7 +44,7 @@
                             <div class="block">
                                 <p>The live stream uses RTSP protocol. Make sure:</p>
                                 <p>1. You are connected to the dashcam WiFi</p>
-                                <p>2. The dashcam is powered on and working</p>
+                                <p>2. The dashcam is powered on</p>
                                 <p>3. You may need an external RTSP player app</p>
                             </div>
                         </div>
@@ -57,8 +58,8 @@
                         <div class="accordion-item-content">
                             <div class="block">
                                 <p>1. Go to the Gallery</p>
-                                <p>2. Select the video you want to download</p>
-                                <p>3. Tap the download icon in the top right</p>
+                                <p>2. Select the video you want</p>
+                                <p>3. Tap to open in external player</p>
                                 <p>Note: Recording must be stopped to access files</p>
                             </div>
                         </div>
@@ -71,9 +72,9 @@
                         </a>
                         <div class="accordion-item-content">
                             <div class="block">
-                                <p><strong>Loop:</strong> Normal continuous recording videos</p>
-                                <p><strong>Locked:</strong> Emergency/impact-triggered recordings that won't be overwritten</p>
-                                <p><strong>Snapshot:</strong> Manual photos taken with the camera button</p>
+                                <p><strong>Loop:</strong> Normal continuous recording</p>
+                                <p><strong>Locked:</strong> Emergency recordings (protected)</p>
+                                <p><strong>Snapshot:</strong> Manual photos</p>
                             </div>
                         </div>
                     </li>
@@ -83,44 +84,23 @@
             <!-- User Guide -->
             <div class="block-title">User Guide</div>
             <div class="block">
-                <p style="color: #666; line-height: 1.6;">
-                    1. Android devices cannot use WiFi and mobile data at the same time. 
-                    To share photos or videos, download them first, then disconnect from 
-                    the dashcam WiFi to share via phone network.
-                </p>
-                <p style="color: #666; line-height: 1.6; margin-top: 15px;">
-                    2. For your safety, DO NOT operate the phone while you are driving.
-                </p>
+                <p class="text-color-gray">1. Android devices cannot use WiFi and mobile data simultaneously. Download files first, then disconnect to share.</p>
+                <p class="text-color-gray">2. For your safety, DO NOT operate the phone while driving.</p>
             </div>
 
-            <!-- Support -->
-            <div class="block-title">Support</div>
-            <div class="list">
-                <ul>
-                    <li>
-                        <a href="#" class="item-link item-content external" target="_blank">
-                            <div class="item-media">
-                                <i class="f7-icons color-theme">envelope_fill</i>
-                            </div>
-                            <div class="item-inner">
-                                <div class="item-title">Contact Support</div>
-                            </div>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Version Info -->
-            <div class="version-info">
-                <p>DashCam App v1.0.0</p>
-                <p style="margin-top: 5px; font-size: 12px;">Camera API: hisnet</p>
+            <!-- Version -->
+            <div class="block text-align-center">
+                <p class="text-color-gray">DashCam App v1.0.0</p>
+                <p class="text-color-gray" style="font-size: 12px;">Camera API: hisnet</p>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-    export default function(props, { $f7 }) {
-        return $render;
-    }
+    return {
+        on: {
+            pageInit: function() {}
+        }
+    };
 </script>

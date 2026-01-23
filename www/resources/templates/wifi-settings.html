@@ -1,0 +1,110 @@
+<template>
+    <div class="page settings-page" data-name="wifi-settings">
+        <!-- Navbar -->
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="link back">
+                        <i class="f7-icons">chevron_left</i>
+                    </a>
+                </div>
+                <div class="title">WiFi Settings</div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar toolbar-bottom">
+            <div class="toolbar-inner">
+                <a href="#" class="btn-cs" @click="savePassword">
+                    SAVE
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <div class="block">
+                <p style="text-align: center; color: #666;">
+                    Change the WiFi password for your dashcam.
+                    Password must be at least 8 characters.
+                </p>
+            </div>
+
+            <div class="list no-hairlines-md">
+                <ul>
+                    <li class="item-content item-input">
+                        <div class="item-media">
+                            <i class="f7-icons color-theme">lock_fill</i>
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title item-label">New Password</div>
+                            <div class="item-input-wrap">
+                                <input type="password" id="wifiPassword" placeholder="Enter new password" minlength="8">
+                                <span class="input-clear-button"></span>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="item-content item-input">
+                        <div class="item-media">
+                            <i class="f7-icons color-theme">lock_fill</i>
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title item-label">Confirm Password</div>
+                            <div class="item-input-wrap">
+                                <input type="password" id="wifiPasswordConfirm" placeholder="Confirm password" minlength="8">
+                                <span class="input-clear-button"></span>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="block">
+                <p style="color: #ff9500; font-size: 14px;">
+                    <i class="f7-icons" style="font-size: 14px;">exclamationmark_triangle_fill</i>
+                    After changing the password, you will need to reconnect to the dashcam WiFi with the new password.
+                </p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    export default function(props, { $f7, $el }) {
+        function savePassword() {
+            const password = $el.value.querySelector('#wifiPassword').value;
+            const confirm = $el.value.querySelector('#wifiPasswordConfirm').value;
+
+            if (!password || !confirm) {
+                $f7.dialog.alert('Please enter both password fields');
+                return;
+            }
+
+            if (password.length < 8) {
+                $f7.dialog.alert('Password must be at least 8 characters');
+                return;
+            }
+
+            if (password !== confirm) {
+                $f7.dialog.alert('Passwords do not match');
+                return;
+            }
+
+            $f7.dialog.confirm(
+                'Are you sure you want to change the WiFi password?',
+                'Confirm',
+                () => {
+                    // Here you would send the new password to the camera
+                    $f7.toast.show({
+                        text: 'Password updated. Please reconnect to WiFi.',
+                        position: 'center',
+                        closeTimeout: 3000
+                    });
+                    $f7.views.main.router.back();
+                }
+            );
+        }
+
+        return $render;
+    }
+</script>

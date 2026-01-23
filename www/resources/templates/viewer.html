@@ -1,0 +1,94 @@
+<template>
+    <div class="page viewer-page" data-name="viewer">
+        <!-- Navbar -->
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="link back">
+                        <i class="f7-icons">chevron_left</i>
+                    </a>
+                </div>
+                <div class="title">${filename}</div>
+                <div class="right">
+                    <a href="#" class="link" @click="downloadFile">
+                        <i class="f7-icons">arrow_down_circle</i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            ${type === 'snapshot' ? `
+                <img src="${fileUrl}" alt="${filename}" style="width: 100%;">
+            ` : `
+                <div style="text-align: center; padding: 40px 20px; color: white;">
+                    <i class="f7-icons" style="font-size: 64px; opacity: 0.5; margin-bottom: 20px;">film</i>
+                    <p style="margin-bottom: 20px;">${filename}</p>
+                    <a href="#" class="btn-cs" @click="playVideo">
+                        <i class="f7-icons" style="margin-right: 10px;">play_fill</i>
+                        Play Video
+                    </a>
+                    <p style="margin-top: 30px; font-size: 12px; opacity: 0.6;">
+                        ${fileUrl}
+                    </p>
+                </div>
+            `}
+        </div>
+    </div>
+</template>
+
+<script>
+    export default function(props, { $f7, $on, $f7route }) {
+        const type = $f7route.params.type;
+        const filename = decodeURIComponent($f7route.params.filename);
+        
+        // Determine directory based on type
+        let dir;
+        const camera = AppStore.state.currentCamera;
+        
+        switch(type) {
+            case 'loop':
+                dir = camera === 'front' ? DashCamAPI.directories.loopFront : DashCamAPI.directories.loopRear;
+                break;
+            case 'locked':
+                dir = camera === 'front' ? DashCamAPI.directories.lockedFront : DashCamAPI.directories.lockedRear;
+                break;
+            case 'snapshot':
+                dir = camera === 'front' ? DashCamAPI.directories.snapshotFront : DashCamAPI.directories.snapshotRear;
+                break;
+        }
+        
+        const fileUrl = DashCamAPI.getFileUrl(dir, filename);
+
+        function playVideo() {
+            // For Cordova apps, use system video player
+            if (typeof cordova !== 'undefined' && cordova.InAppBrowser) {
+                cordova.InAppBrowser.open(fileUrl, '_system');
+            } else {
+                window.open(fileUrl, '_blank');
+            }
+        }
+
+        function downloadFile() {
+            // For Cordova apps, use file transfer
+            if (typeof cordova !== 'undefined') {
+                $f7.toast.show({
+                    text: 'Starting download...',
+                    position: 'center',
+                    closeTimeout: 2000
+                });
+                // Would need cordova-plugin-file-transfer
+            } else {
+                // For web, open in new tab to trigger download
+                const a = document.createElement('a');
+                a.href = fileUrl;
+                a.download = filename;
+                a.target = '_blank';
+                a.click();
+            }
+        }
+
+        return $render;
+    }
+</script>

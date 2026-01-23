@@ -1,48 +1,216 @@
-<div data-name="gallery" class="page gallery">
-    <div class="navbar">
-        <div class="navbar-inner">
-            <div class="left">
-                <a class="panel-open" href="#">
-                    <i class="f7-icons icon-menu"></i>
-                </a>
-            </div>
-            <div class="title">Gallery</div>
-            <div class="right">
-                <a href="#" >
-                    <i class="f7-icons icon-sort"></i>
-                </a>
-                <a href="#" >
-                    <i class="f7-icons icon-done"></i>
-                </a>
-            </div>
-            <div class="subnavbar">
-                <div class="toolbar tabbar" id="toolbar-menu">
-                    <div class="toolbar-inner">
-                        <a href="#photo" class="tab-link tab-link-active" >
-                            <span class="tabbar-label"><b>Photo</b></span>
-                        </a>
-                        <a href="#video" class="tab-link">
-                            <span class="tabbar-label"><b>Video</b></span>
-                        </a>
+<template>
+    <div class="page gallery-page" data-name="gallery">
+        <!-- Navbar with tabs -->
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="link panel-open" data-panel="left">
+                        <i class="f7-icons">bars</i>
+                    </a>
+                </div>
+                <div class="title">Gallery</div>
+                <div class="right">
+                    <a href="#" class="link" @click="refreshGallery">
+                        <i class="f7-icons">arrow_clockwise</i>
+                    </a>
+                </div>
+                <div class="subnavbar">
+                    <div class="toolbar tabbar">
+                        <div class="toolbar-inner">
+                            <a href="#tab-loop" class="tab-link tab-link-active">
+                                <span>Loop</span>
+                            </a>
+                            <a href="#tab-locked" class="tab-link">
+                                <span>Locked</span>
+                            </a>
+                            <a href="#tab-snapshot" class="tab-link">
+                                <span>Snapshot</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="tabs">
-        <!-- First tab, active -->
-        <div class="page-content tab tab-active" id="photo">
-            <div class="block">
-                <div class="list virtual-list photo-list no-hairlines">
+
+        <!-- Page Content with Tabs -->
+        <div class="page-content">
+            <!-- Camera Filter -->
+            <div class="camera-filter">
+                <button class="button ${cameraFilter === 'front' ? 'button-active' : ''}" @click="setCameraFilter('front')">
+                    Front
+                </button>
+                <button class="button ${cameraFilter === 'rear' ? 'button-active' : ''}" @click="setCameraFilter('rear')">
+                    Rear
+                </button>
+            </div>
+
+            <div class="tabs">
+                <!-- Loop Tab -->
+                <div id="tab-loop" class="tab tab-active">
+                    ${loading ? `
+                        <div class="gallery-empty">
+                            <div class="preloader"></div>
+                            <p>Loading...</p>
+                        </div>
+                    ` : loopFiles.length > 0 ? `
+                        <div class="gallery-grid">
+                            ${loopFiles.map(file => `
+                                <a href="/viewer/loop/${encodeURIComponent(file.filename)}/" class="gallery-item">
+                                    <img src="${file.thumbnailUrl}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 56%22><rect fill=%22%23e0e0e0%22 width=%22100%22 height=%2256%22/><text x=%2250%22 y=%2230%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%228%22>No Preview</text></svg>'" alt="">
+                                    <div class="item-overlay">
+                                        ${file.dateTime ? formatDate(file.dateTime) : file.filename}
+                                    </div>
+                                    <div class="item-duration">
+                                        <i class="f7-icons" style="font-size: 10px;">play_fill</i>
+                                    </div>
+                                </a>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <div class="gallery-empty">
+                            <i class="f7-icons">film</i>
+                            <p>No loop recordings found</p>
+                        </div>
+                    `}
+                </div>
+
+                <!-- Locked Tab -->
+                <div id="tab-locked" class="tab">
+                    ${loading ? `
+                        <div class="gallery-empty">
+                            <div class="preloader"></div>
+                            <p>Loading...</p>
+                        </div>
+                    ` : lockedFiles.length > 0 ? `
+                        <div class="gallery-grid">
+                            ${lockedFiles.map(file => `
+                                <a href="/viewer/locked/${encodeURIComponent(file.filename)}/" class="gallery-item">
+                                    <img src="${file.thumbnailUrl}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 56%22><rect fill=%22%23e0e0e0%22 width=%22100%22 height=%2256%22/><text x=%2250%22 y=%2230%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%228%22>No Preview</text></svg>'" alt="">
+                                    <div class="item-overlay">
+                                        ${file.dateTime ? formatDate(file.dateTime) : file.filename}
+                                    </div>
+                                    <div class="item-duration">
+                                        <i class="f7-icons" style="font-size: 10px; color: #ff9500;">lock_fill</i>
+                                    </div>
+                                </a>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <div class="gallery-empty">
+                            <i class="f7-icons">lock</i>
+                            <p>No locked recordings found</p>
+                        </div>
+                    `}
+                </div>
+
+                <!-- Snapshot Tab -->
+                <div id="tab-snapshot" class="tab">
+                    ${loading ? `
+                        <div class="gallery-empty">
+                            <div class="preloader"></div>
+                            <p>Loading...</p>
+                        </div>
+                    ` : snapshotFiles.length > 0 ? `
+                        <div class="gallery-grid">
+                            ${snapshotFiles.map(file => `
+                                <a href="/viewer/snapshot/${encodeURIComponent(file.filename)}/" class="gallery-item">
+                                    <img src="${file.url}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 56%22><rect fill=%22%23e0e0e0%22 width=%22100%22 height=%2256%22/><text x=%2250%22 y=%2230%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%228%22>No Preview</text></svg>'" alt="">
+                                    <div class="item-overlay">
+                                        ${file.dateTime ? formatDate(file.dateTime) : file.filename}
+                                    </div>
+                                    <div class="item-duration">
+                                        <i class="f7-icons" style="font-size: 10px;">photo</i>
+                                    </div>
+                                </a>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <div class="gallery-empty">
+                            <i class="f7-icons">photo</i>
+                            <p>No snapshots found</p>
+                        </div>
+                    `}
                 </div>
             </div>
         </div>
-        <!-- First tab, active -->
-        <div class="page-content tab" id="video">
-            <div class="block">
-                <div class="list virtual-list video-list no-hairlines">
-                </div>
-            </div>
-        </div>
     </div>
-</div>
+</template>
+
+<script>
+    export default function(props, { $f7, $on, $update }) {
+        let loading = false;
+        let cameraFilter = 'front';
+        let loopFiles = [];
+        let lockedFiles = [];
+        let snapshotFiles = [];
+
+        $on('pageInit', () => {
+            if (!AppStore.state.isConnected) {
+                $f7.dialog.alert(
+                    'Please connect to the dashcam first',
+                    'Not Connected',
+                    () => {
+                        $f7.views.main.router.back();
+                    }
+                );
+                return;
+            }
+            loadAllFiles();
+        });
+
+        async function loadAllFiles() {
+            loading = true;
+            $update();
+
+            try {
+                // Stop recording first to access files
+                await DashCamAPI.stopRecording();
+                AppStore.setRecording(false);
+
+                // Load files for all categories
+                const [loop, locked, snapshot] = await Promise.all([
+                    DashCamAPI.getGalleryFiles('loop', cameraFilter),
+                    DashCamAPI.getGalleryFiles('locked', cameraFilter),
+                    DashCamAPI.getGalleryFiles('snapshot', cameraFilter)
+                ]);
+
+                loopFiles = loop;
+                lockedFiles = locked;
+                snapshotFiles = snapshot;
+            } catch (e) {
+                console.error('Failed to load gallery:', e);
+                $f7.toast.show({
+                    text: 'Failed to load gallery',
+                    position: 'center',
+                    closeTimeout: 2000
+                });
+            }
+
+            loading = false;
+            $update();
+        }
+
+        function setCameraFilter(filter) {
+            if (cameraFilter !== filter) {
+                cameraFilter = filter;
+                $update();
+                loadAllFiles();
+            }
+        }
+
+        function refreshGallery() {
+            loadAllFiles();
+        }
+
+        function formatDate(date) {
+            if (!date) return '';
+            const d = date.getDate().toString().padStart(2, '0');
+            const m = (date.getMonth() + 1).toString().padStart(2, '0');
+            const h = date.getHours().toString().padStart(2, '0');
+            const min = date.getMinutes().toString().padStart(2, '0');
+            return `${d}.${m} ${h}:${min}`;
+        }
+
+        return $render;
+    }
+</script>

@@ -1,0 +1,98 @@
+<template>
+    <div class="panel panel-left panel-cover panel-init">
+        <div class="page" data-name="panel-left">
+            <div class="page-content">
+                <!-- Header -->
+                <div class="panel-header bg-gradient">
+                    <div class="block no-margin padding">
+                        <div class="logo">
+                            <div class="logo-text">DashCam</div>
+                        </div>
+                        <p class="text-color-white no-margin-bottom">{{CameraName}}</p>
+                        <p class="text-color-white no-margin opacity-70">{{CameraIP}}</p>
+                    </div>
+                </div>
+
+                <!-- Menu List -->
+                <div class="list no-hairlines no-hairlines-between no-chevron margin-top-half">
+                    <ul>
+                        <li>
+                            <a href="/" data-clear-previous-history="true" class="item-link item-content panel-close">
+                                <div class="item-media"><i class="f7-icons">house_fill</i></div>
+                                <div class="item-inner">
+                                    <div class="item-title">Home</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/live/" class="item-link item-content panel-close">
+                                <div class="item-media"><i class="f7-icons">videocam_fill</i></div>
+                                <div class="item-inner">
+                                    <div class="item-title">Live Stream</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/gallery/" class="item-link item-content panel-close">
+                                <div class="item-media"><i class="f7-icons">photo_on_rectangle</i></div>
+                                <div class="item-inner">
+                                    <div class="item-title">Gallery</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/settings/" class="item-link item-content panel-close">
+                                <div class="item-media"><i class="f7-icons">gear_alt_fill</i></div>
+                                <div class="item-inner">
+                                    <div class="item-title">Settings</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/camera-settings/" class="item-link item-content panel-close">
+                                <div class="item-media"><i class="f7-icons">camera_fill</i></div>
+                                <div class="item-inner">
+                                    <div class="item-title">Camera Settings</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/info/" class="item-link item-content panel-close">
+                                <div class="item-media"><i class="f7-icons">info_circle_fill</i></div>
+                                <div class="item-inner">
+                                    <div class="item-title">Info & Help</div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Connection Status -->
+                <div class="block">
+                    <div class="connection-status-panel">
+                        <span class="status-dot {{#if IsConnected}}connected{{else}}disconnected{{/if}}"></span>
+                        <span>{{#if IsConnected}}Connected{{else}}Not Connected{{/if}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    return {
+        data: function() {
+            var camera = AppStore.state.selectedCamera;
+            return {
+                CameraName: camera ? camera.name : 'No camera selected',
+                CameraIP: camera ? camera.ip : '—',
+                IsConnected: AppStore.state.isConnected
+            };
+        },
+        on: {
+            pageInit: function(e, page) {
+                var self = this;
+            }
+        }
+    };
+</script>

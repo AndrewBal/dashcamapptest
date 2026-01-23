@@ -1,0 +1,198 @@
+<template>
+    <div class="page camera-settings-page" data-name="camera-settings">
+        <!-- Navbar -->
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="link icon-only back">
+                        <i class="f7-icons">chevron_left</i>
+                    </a>
+                </div>
+                <div class="title">Camera Settings</div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Recording -->
+            <div class="block-title">Recording</div>
+            <div class="list">
+                <ul>
+                    <li>
+                        <div class="item-content">
+                            <div class="item-media"><i class="f7-icons color-theme">mic_fill</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Sound Recording</div>
+                                <div class="item-after">
+                                    <label class="toggle toggle-init color-theme">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-icon"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="#" class="item-link item-content" @click="showPicker('resolution')">
+                            <div class="item-media"><i class="f7-icons color-theme">rectangle_on_rectangle</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Resolution</div>
+                                <div class="item-after">{{Resolution}}</div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Safety -->
+            <div class="block-title">Safety</div>
+            <div class="list">
+                <ul>
+                    <li>
+                        <a href="#" class="item-link item-content" @click="showPicker('sensitivity')">
+                            <div class="item-media"><i class="f7-icons color-theme">bolt_fill</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Collision Sensitivity</div>
+                                <div class="item-after">{{Sensitivity}}</div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Audio -->
+            <div class="block-title">Audio</div>
+            <div class="list">
+                <ul>
+                    <li>
+                        <div class="item-content">
+                            <div class="item-media"><i class="f7-icons color-theme">speaker_2_fill</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Voice Prompt</div>
+                                <div class="item-after">
+                                    <label class="toggle toggle-init color-theme">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-icon"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Storage -->
+            <div class="block-title">Storage</div>
+            <div class="list">
+                <ul>
+                    <li>
+                        <a href="#" class="item-link item-content" @click="formatCard">
+                            <div class="item-media"><i class="f7-icons color-theme">sdcard</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Format TF Card</div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- System -->
+            <div class="block-title">System</div>
+            <div class="list">
+                <ul>
+                    <li>
+                        <a href="#" class="item-link item-content" @click="syncTime">
+                            <div class="item-media"><i class="f7-icons color-theme">clock_fill</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Sync Time</div>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="item-link item-content" @click="showPicker('language')">
+                            <div class="item-media"><i class="f7-icons color-theme">globe</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Language</div>
+                                <div class="item-after">{{Language}}</div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    return {
+        data: function() {
+            return {
+                Resolution: '1080P',
+                Sensitivity: 'Medium',
+                Language: 'English'
+            };
+        },
+        methods: {
+            showPicker: function(type) {
+                var self = this;
+                var options = [];
+                var current = '';
+                
+                if (type === 'resolution') {
+                    options = ['720P', '1080P'];
+                    current = self.Resolution;
+                } else if (type === 'sensitivity') {
+                    options = ['Low', 'Medium', 'High'];
+                    current = self.Sensitivity;
+                } else if (type === 'language') {
+                    options = ['English', 'Chinese'];
+                    current = self.Language;
+                }
+                
+                var buttons = options.map(function(opt) {
+                    return {
+                        text: opt,
+                        bold: opt === current,
+                        onClick: function() {
+                            if (type === 'resolution') self.$setState({ Resolution: opt });
+                            else if (type === 'sensitivity') self.$setState({ Sensitivity: opt });
+                            else if (type === 'language') self.$setState({ Language: opt });
+                            
+                            self.$app.toast.show({
+                                text: 'Setting updated',
+                                position: 'center',
+                                closeTimeout: 1500
+                            });
+                        }
+                    };
+                });
+                
+                buttons.push({ text: 'Cancel', color: 'red' });
+                
+                self.$app.dialog.create({
+                    title: type.charAt(0).toUpperCase() + type.slice(1),
+                    buttons: buttons,
+                    verticalButtons: true
+                }).open();
+            },
+            formatCard: function() {
+                var self = this;
+                self.$app.dialog.confirm('Format TF card? All data will be erased.', 'Warning', function() {
+                    self.$app.toast.show({
+                        text: 'Format command sent',
+                        position: 'center',
+                        closeTimeout: 2000
+                    });
+                });
+            },
+            syncTime: function() {
+                this.$app.toast.show({
+                    text: 'Time synced to device',
+                    position: 'center',
+                    closeTimeout: 2000
+                });
+            }
+        }
+    };
+</script>
