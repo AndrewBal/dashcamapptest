@@ -1,0 +1,19 @@
+{
+    "android": {
+        "debug": {
+            "keystore": "/Users/andreybal/AndroidStudioProjects/jks/quiktrakNew.jks",
+            "storePassword": "quiktrak",
+            "alias": "quiktrak",
+            "password" : "quiktrak",
+            "keystoreType": "jks"
+        },
+        "release": {
+            "keystore": "/Users/andreybal/AndroidStudioProjects/jks/quiktrakNew.jks",
+            "storePassword": "quiktrak",
+            "alias": "quiktrak",
+            "password" : "quiktrak",
+            "keystoreType": "jks",
+            "packageType": "apk"
+        }
+    }
+}
