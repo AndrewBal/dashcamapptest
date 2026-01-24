@@ -216,7 +216,39 @@ var app = new Framework7({
                 return;
             }
             
-            mainView.router.navigate('/live/');
+            //mainView.router.navigate('/live/');
+
+
+            if (window.RtspPlayer) {
+                    window.RtspPlayer.play(url,
+                        function(status) {
+                            console.log('[Live] Player status:', status);
+                          
+                        },
+                        function(error) {
+                            self.toast.show({
+                                text: 'Stream error: ' + error,
+                                position: 'center',
+                                closeTimeout: 3000
+                            });
+                        }
+                    );
+                } else {
+                    console.log('[Live] RtspPlayer plugin not available, trying external player');
+                    self.methods.openExternalPlayer();
+                }
+        },
+
+
+        openExternalPlayer: function() {
+            var url = AppStore.getCurrentStreamUrl();
+            
+            // Try to open with system player
+            if (window.cordova && window.cordova.InAppBrowser) {
+                window.cordova.InAppBrowser.open(url, '_system');
+            } else {
+                window.open(url, '_blank');
+            }
         },
         
         // Format date

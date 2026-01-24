@@ -21,8 +21,8 @@
   "cordova": {
     "plugins": {
       "cordova-plugin-inappbrowser": {},
-      "cordova-plugin-rtsp-player": {},
-      "cordova-open-native-settings": {}
+      "cordova-open-native-settings": {},
+      "cordova-plugin-rtsp-player": {}
     },
     "platforms": [
       "android"
