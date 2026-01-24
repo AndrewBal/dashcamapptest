@@ -21,7 +21,7 @@
         <!-- Toolbar Bottom -->
         <div class="toolbar toolbar-bottom no-hairline">
             <div class="toolbar-inner toolbar-buttons">
-                <a href="#" class="btn-cs" @click="handleConnect">
+                <a href="#" class="btn-cs {{#if IsConnected}}btn-connected{{/if}}" @click="handleConnect">
                     {{#if IsConnected}}CONNECTED{{else}}CONNECT{{/if}}
                 </a>
                 <a href="#" class="btn-cs" @click="handleLive">
@@ -58,11 +58,11 @@
                 <!-- Camera Icon -->
                 <div class="camera-icon-wrapper">
                     <svg class="main-bg" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="30" y="30" width="140" height="90" rx="10" stroke="#48c6ef" stroke-width="4" fill="none" opacity="0.3"/>
-                        <circle cx="100" cy="75" r="30" stroke="#6f86d6" stroke-width="4" fill="none" opacity="0.5"/>
-                        <circle cx="100" cy="75" r="15" stroke="#48c6ef" stroke-width="3" fill="none" opacity="0.7"/>
-                        <rect x="20" y="60" width="15" height="30" rx="3" stroke="#6f86d6" stroke-width="3" fill="none" opacity="0.3"/>
-                        <rect x="165" y="60" width="15" height="30" rx="3" stroke="#6f86d6" stroke-width="3" fill="none" opacity="0.3"/>
+                        <rect x="30" y="30" width="140" height="90" rx="10" stroke="{{#if IsConnected}}#4cd964{{else}}#48c6ef{{/if}}" stroke-width="4" fill="none" opacity="0.3"/>
+                        <circle cx="100" cy="75" r="30" stroke="{{#if IsConnected}}#4cd964{{else}}#6f86d6{{/if}}" stroke-width="4" fill="none" opacity="0.5"/>
+                        <circle cx="100" cy="75" r="15" stroke="{{#if IsConnected}}#4cd964{{else}}#48c6ef{{/if}}" stroke-width="3" fill="none" opacity="0.7"/>
+                        <rect x="20" y="60" width="15" height="30" rx="3" stroke="{{#if IsConnected}}#4cd964{{else}}#6f86d6{{/if}}" stroke-width="3" fill="none" opacity="0.3"/>
+                        <rect x="165" y="60" width="15" height="30" rx="3" stroke="{{#if IsConnected}}#4cd964{{else}}#6f86d6{{/if}}" stroke-width="3" fill="none" opacity="0.3"/>
                     </svg>
                 </div>
 
@@ -71,7 +71,7 @@
                 <p class="text-content">Camera connected. You can now view live stream or access the gallery.</p>
                 {{else}}
                 <p class="text-content">You have not had any connections to the dashcam.</p>
-                <p class="text-content">Select in the connection settings Wi-Fi your dashcam and click the CONNECT button.</p>
+                <p class="text-content">Click CONNECT to open WiFi settings and connect to your dashcam network.</p>
                 {{/if}}
             </div>
 
@@ -93,18 +93,25 @@
     </div>
 </template>
 
+<style>
+    .btn-connected {
+        background: linear-gradient(to right, #4cd964, #34c759) !important;
+    }
+</style>
+
 <script>
     return {
         data: function() {
             var camera = AppStore.state.selectedCamera;
             return {
                 IsConnected: AppStore.state.isConnected,
-                SelectedCameraName: camera ? camera.name : 'None'
+                SelectedCameraName: camera ? camera.name : 'Default (192.168.0.1)'
             };
         },
         methods: {
             handleConnect: function() {
                 var self = this;
+                // This will check connection and open WiFi settings if not connected
                 self.$app.methods.connectToCamera().then(function(connected) {
                     if (connected) {
                         self.$setState({
@@ -124,19 +131,25 @@
             },
             updateState: function() {
                 var camera = AppStore.state.selectedCamera;
-                this.$setState({
-                    IsConnected: AppStore.state.isConnected,
-                    SelectedCameraName: camera ? camera.name : 'None'
-                });
+                var newConnected = AppStore.state.isConnected;
+                var newCameraName = camera ? camera.name : 'Default (192.168.0.1)';
+                
+                // Only update if changed
+                if (newConnected !== this.IsConnected || newCameraName !== this.SelectedCameraName) {
+                    this.$setState({
+                        IsConnected: newConnected,
+                        SelectedCameraName: newCameraName
+                    });
+                }
             }
         },
         on: {
             pageInit: function(e, page) {
                 var self = this;
-                // Update state periodically
+                // Update state every 2 seconds to catch connection changes
                 self.interval = setInterval(function() {
                     self.updateState();
-                }, 3000);
+                }, 2000);
             },
             pageBeforeRemove: function() {
                 if (this.interval) {

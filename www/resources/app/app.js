@@ -6,6 +6,10 @@
 // Initialize store
 AppStore.init();
 
+// Connection check interval
+var connectionCheckInterval = null;
+// var vConsole = new VConsole();
+
 // Create Framework7 App
 var app = new Framework7({
     root: '#app',
@@ -27,15 +31,28 @@ var app = new Framework7({
         checkConnection: function() {
             var self = this;
             return DASHCAM_API.checkConnection().then(function(connected) {
+                var wasConnected = AppStore.state.isConnected;
                 AppStore.setConnected(connected);
                 self.data.isConnected = connected;
+                
+                // Show toast if connection state changed
+                if (connected && !wasConnected) {
+                    self.toast.show({
+                        text: 'Dashcam connected!',
+                        position: 'center',
+                        closeTimeout: 2000
+                    });
+                }
+                
                 return connected;
             });
         },
         
-        // Connect to camera
+        // Connect to camera - opens WiFi settings if not connected
         connectToCamera: function() {
             var self = this;
+            
+            // First check if already connected
             self.preloader.show();
             
             return DASHCAM_API.checkConnection().then(function(connected) {
@@ -51,17 +68,28 @@ var app = new Framework7({
                     });
                     return true;
                 } else {
-                    self.dialog.alert(
-                        'Unable to connect. Please check WiFi connection.',
-                        'Connection Failed'
+                    // Not connected - open WiFi settings
+                    self.dialog.confirm(
+                        'Please connect to your dashcam WiFi network (usually starts with "DASHCAM" or similar).',
+                        'Open WiFi Settings',
+                        function() {
+                            openWiFiSettings();
+                            // Start checking for connection after user goes to WiFi settings
+                            startConnectionPolling();
+                        }
                     );
                     return false;
                 }
             }).catch(function() {
                 self.preloader.hide();
-                self.dialog.alert(
-                    'Connection error. Please try again.',
-                    'Error'
+                // Open WiFi settings on error too
+                self.dialog.confirm(
+                    'Cannot reach dashcam. Please connect to dashcam WiFi.',
+                    'Open WiFi Settings',
+                    function() {
+                        openWiFiSettings();
+                        startConnectionPolling();
+                    }
                 );
                 return false;
             });
@@ -72,7 +100,7 @@ var app = new Framework7({
             var self = this;
             
             if (!AppStore.state.isConnected) {
-                self.dialog.alert('Please connect to camera first', 'Not Connected');
+                self.methods.connectToCamera();
                 return;
             }
             
@@ -108,7 +136,7 @@ var app = new Framework7({
             var self = this;
             
             if (!AppStore.state.isConnected) {
-                self.dialog.alert('Please connect to camera first', 'Not Connected');
+                self.methods.connectToCamera();
                 return Promise.resolve(false);
             }
             
@@ -184,16 +212,7 @@ var app = new Framework7({
             var self = this;
             
             if (!AppStore.state.isConnected) {
-                self.dialog.confirm(
-                    'Please connect to camera first. Open WiFi settings?',
-                    'Not Connected',
-                    function() {
-                        // Try to open WiFi settings on mobile
-                        if (window.cordova && cordova.plugins && cordova.plugins.settings) {
-                            cordova.plugins.settings.openSetting('wifi');
-                        }
-                    }
-                );
+                self.methods.connectToCamera();
                 return;
             }
             
@@ -222,9 +241,10 @@ var app = new Framework7({
             
             // Check connection on start
             var self = this;
-            if (AppStore.state.selectedCamera) {
-                self.methods.checkConnection();
-            }
+            self.methods.checkConnection();
+            
+            // Start periodic connection check
+            startConnectionPolling();
         }
     }
 });
@@ -233,3 +253,92 @@ var app = new Framework7({
 var mainView = app.views.create('.view-main', {
     url: '/'
 });
+
+/**
+ * Open device WiFi settings
+ */
+function openWiFiSettings() {
+ 
+    if (window.cordova) {
+        // Use cordova-open-native-settings plugin
+        if (window.cordova.plugins && window.cordova.plugins.settings) {
+            window.cordova.plugins.settings.open('wifi', 
+                function() {
+                    console.log('WiFi settings opened successfully');
+                },
+                function(error) {
+                    console.log('Failed to open WiFi settings:', error);
+                    showManualWiFiInstructions();
+                }
+            );
+        } 
+        // Alternative: try direct Android intent
+        else {
+            try {
+                window.open('intent:#Intent;action=android.settings.WIFI_SETTINGS;end', '_system');
+            } catch (e) {
+                console.log('Intent failed:', e);
+                showManualWiFiInstructions();
+            }
+        }
+    } else {
+        // Web/browser fallback
+        showManualWiFiInstructions();
+    }
+}
+
+/**
+ * Show manual instructions if can't open WiFi settings
+ */
+function showManualWiFiInstructions() {
+    app.dialog.alert(
+        'Please open your device Settings → WiFi and connect to the dashcam network (usually starts with "DASHCAM" or similar).',
+        'Connect to WiFi'
+    );
+}
+
+/**
+ * Start polling for connection
+ * Checks every 3 seconds if connected to dashcam
+ */
+function startConnectionPolling() {
+    // Clear existing interval
+    if (connectionCheckInterval) {
+        clearInterval(connectionCheckInterval);
+    }
+    
+    // Check every 3 seconds
+    connectionCheckInterval = setInterval(function() {
+        app.methods.checkConnection().then(function(connected) {
+            if (connected) {
+                console.log('Dashcam connection detected');
+            }
+        });
+    }, 3000);
+}
+
+/**
+ * Stop connection polling
+ */
+function stopConnectionPolling() {
+    if (connectionCheckInterval) {
+        clearInterval(connectionCheckInterval);
+        connectionCheckInterval = null;
+    }
+}
+
+// Handle app pause/resume
+document.addEventListener('pause', function() {
+    stopConnectionPolling();
+}, false);
+
+document.addEventListener('resume', function() {
+    startConnectionPolling();
+    app.methods.checkConnection();
+}, false);
+
+// Export functions for use in templates
+window.openWiFiSettings = openWiFiSettings;
+window.showManualWiFiInstructions = showManualWiFiInstructions;
+window.startConnectionPolling = startConnectionPolling;
+window.stopConnectionPolling = stopConnectionPolling;

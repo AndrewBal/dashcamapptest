@@ -29,6 +29,11 @@ window.AppStore = {
                     DASHCAM_API.config.ip = this.state.selectedCamera.ip;
                 }
             }
+            
+            var currentCamera = localStorage.getItem('dashcam_current_camera');
+            if (currentCamera) {
+                this.state.currentCamera = currentCamera;
+            }
         } catch (e) {
             console.error('Failed to load from storage:', e);
         }
@@ -95,12 +100,27 @@ window.AppStore = {
 
     switchCamera: function() {
         this.state.currentCamera = this.state.currentCamera === 'front' ? 'rear' : 'front';
+        try {
+            localStorage.setItem('dashcam_current_camera', this.state.currentCamera);
+        } catch (e) {
+            console.error('Failed to save current camera:', e);
+        }
         return this.state.currentCamera;
     },
 
     getCurrentStreamUrl: function() {
-        return this.state.currentCamera === 'front' 
-            ? DASHCAM_API.streams.front() 
-            : DASHCAM_API.streams.rear();
+        if (this.state.currentCamera === 'front') {
+            return DASHCAM_API.streams.front();
+        } else {
+            return DASHCAM_API.streams.rear();
+        }
+    },
+    
+    getFrontStreamUrl: function() {
+        return DASHCAM_API.streams.front();
+    },
+    
+    getRearStreamUrl: function() {
+        return DASHCAM_API.streams.rear();
     }
 };

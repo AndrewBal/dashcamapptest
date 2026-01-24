@@ -39,21 +39,127 @@ window.DASHCAM_API = {
 
     /**
      * Check connection to camera
+     * Tries multiple methods to verify connection
      */
     checkConnection: function() {
         var self = this;
         return new Promise(function(resolve, reject) {
+            var url = self.baseUrl + '/cgi-bin/hisnet/getdirfilecount.cgi?-dir=norm';
+            
+            console.log('[DashCam API] Checking connection to: ' + url);
+            
             var xhr = new XMLHttpRequest();
-            xhr.timeout = 3000;
+            xhr.timeout = 5000; // Increased timeout to 5 seconds
+            
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
-                    resolve(xhr.status === 200);
+                    console.log('[DashCam API] Response status: ' + xhr.status);
+                    console.log('[DashCam API] Response text: ' + xhr.responseText.substring(0, 100));
+                    
+                    // Check if we got any response (even if not 200)
+                    // Some cameras return different status codes
+                    if (xhr.status === 200 || xhr.status === 0 && xhr.responseText) {
+                        // Check if response contains expected data
+                        if (xhr.responseText && xhr.responseText.indexOf('count') !== -1) {
+                            console.log('[DashCam API] Connection SUCCESS (valid response)');
+                            resolve(true);
+                        } else if (xhr.status === 200) {
+                            console.log('[DashCam API] Connection SUCCESS (status 200)');
+                            resolve(true);
+                        } else {
+                            console.log('[DashCam API] Connection FAILED (invalid response)');
+                            resolve(false);
+                        }
+                    } else {
+                        console.log('[DashCam API] Connection FAILED (status: ' + xhr.status + ')');
+                        resolve(false);
+                    }
                 }
             };
-            xhr.onerror = function() { resolve(false); };
-            xhr.ontimeout = function() { resolve(false); };
-            xhr.open('GET', self.baseUrl + '/cgi-bin/hisnet/getdirfilecount.cgi?-dir=norm', true);
-            xhr.send();
+            
+            xhr.onerror = function(e) {
+                console.log('[DashCam API] Connection ERROR: ', e);
+                // Try alternative check
+                self.checkConnectionAlternative().then(resolve);
+            };
+            
+            xhr.ontimeout = function() {
+                console.log('[DashCam API] Connection TIMEOUT');
+                // Try alternative check
+                self.checkConnectionAlternative().then(resolve);
+            };
+            
+            try {
+                xhr.open('GET', url, true);
+                xhr.send();
+            } catch (e) {
+                console.log('[DashCam API] XHR Exception: ', e);
+                self.checkConnectionAlternative().then(resolve);
+            }
+        });
+    },
+
+    /**
+     * Alternative connection check using fetch API
+     */
+    checkConnectionAlternative: function() {
+        var self = this;
+        var url = self.baseUrl + '/';
+        
+        console.log('[DashCam API] Trying alternative check: ' + url);
+        
+        return new Promise(function(resolve) {
+            if (typeof fetch !== 'undefined') {
+                fetch(url, { 
+                    method: 'GET',
+                    mode: 'no-cors', // This allows the request but we can't read response
+                    cache: 'no-cache'
+                })
+                .then(function(response) {
+                    // With no-cors, response.type will be 'opaque' and we can't read status
+                    // But if we get here without error, connection likely exists
+                    console.log('[DashCam API] Fetch response type: ' + response.type);
+                    resolve(true);
+                })
+                .catch(function(error) {
+                    console.log('[DashCam API] Fetch error: ', error);
+                    resolve(false);
+                });
+            } else {
+                resolve(false);
+            }
+        });
+    },
+
+    /**
+     * Simple ping check - just tries to reach the IP
+     */
+    pingCheck: function() {
+        var self = this;
+        return new Promise(function(resolve) {
+            var img = new Image();
+            var timeout;
+            
+            img.onload = function() {
+                clearTimeout(timeout);
+                console.log('[DashCam API] Ping SUCCESS');
+                resolve(true);
+            };
+            
+            img.onerror = function() {
+                clearTimeout(timeout);
+                // Error could mean server exists but no image - still connected
+                console.log('[DashCam API] Ping error (might still be connected)');
+                resolve(true); // Assume connected if we get error response
+            };
+            
+            timeout = setTimeout(function() {
+                console.log('[DashCam API] Ping TIMEOUT');
+                resolve(false);
+            }, 3000);
+            
+            // Try to load a small resource
+            img.src = self.baseUrl + '/favicon.ico?' + Date.now();
         });
     },
 
@@ -66,7 +172,7 @@ window.DASHCAM_API = {
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
-                    resolve(xhr.responseText.indexOf('Success') !== -1);
+                    resolve(xhr.responseText.indexOf('Success') !== -1 || xhr.status === 200);
                 }
             };
             xhr.onerror = function() { reject('Request failed'); };
@@ -84,7 +190,7 @@ window.DASHCAM_API = {
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
-                    resolve(xhr.responseText.indexOf('Success') !== -1);
+                    resolve(xhr.responseText.indexOf('Success') !== -1 || xhr.status === 200);
                 }
             };
             xhr.onerror = function() { reject('Request failed'); };
@@ -102,7 +208,7 @@ window.DASHCAM_API = {
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
-                    resolve(xhr.responseText.indexOf('Success') !== -1);
+                    resolve(xhr.responseText.indexOf('Success') !== -1 || xhr.status === 200);
                 }
             };
             xhr.onerror = function() { reject('Request failed'); };
@@ -224,3 +330,6 @@ window.DASHCAM_API = {
         return this.getFileList(dir);
     }
 };
+
+// Alias for compatibility
+window.DashCamAPI = window.DASHCAM_API;

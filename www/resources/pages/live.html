@@ -1,11 +1,11 @@
 <template>
-    <div class="page live-page" data-name="live">
+    <div class="page live-page no-toolbar" data-name="live">
         <!-- Navbar -->
         <div class="navbar">
             <div class="navbar-bg"></div>
             <div class="navbar-inner">
                 <div class="left">
-                    <a href="#" class="link icon-only back">
+                    <a href="#" class="link back">
                         <i class="f7-icons">chevron_left</i>
                     </a>
                 </div>
@@ -22,33 +22,40 @@
         </div>
 
         <!-- Page Content -->
-        <div class="page-content bg-color-black">
+        <div class="page-content">
             <div class="video-container">
-                <!-- Camera Switch -->
+                <!-- Camera Switch Button -->
                 <a href="#" class="camera-switch" @click="switchCamera">
                     <i class="f7-icons">camera_rotate</i>
                     <span>{{CurrentCameraLabel}}</span>
                 </a>
 
-                <!-- Video Placeholder -->
-                <div class="video-placeholder">
+                <!-- Video Placeholder (shown when not playing) -->
+                <div class="video-placeholder" id="videoPlaceholder">
                     <i class="f7-icons">video_fill</i>
-                    <p>RTSP Stream</p>
+                    <p>{{PlayerStatus}}</p>
                     <p class="stream-url">{{StreamUrl}}</p>
-                    <a href="#" class="btn-cs btn-cs-small margin-top" @click="openExternalPlayer">
-                        Open in Player
+                    {{#if ShowPlayButton}}
+                    <a href="#" class="btn-cs btn-cs-small" style="margin-top: 20px;" @click="startStream">
+                        Play Stream
                     </a>
+                    {{/if}}
                 </div>
 
-                <!-- Controls -->
+                <!-- Controls Overlay -->
                 <div class="controls-overlay">
                     <div class="controls-row">
+                        <!-- Photo Button -->
                         <a href="#" class="control-btn" @click="takePhoto">
                             <i class="f7-icons">camera</i>
                         </a>
+                        
+                        <!-- Record Button -->
                         <a href="#" class="control-btn primary {{#if IsRecording}}recording{{/if}}" @click="toggleRecording">
                             <i class="f7-icons">{{#if IsRecording}}stop_fill{{else}}circle_fill{{/if}}</i>
                         </a>
+                        
+                        <!-- Gallery Button -->
                         <a href="/gallery/" class="control-btn">
                             <i class="f7-icons">photo_on_rectangle</i>
                         </a>
@@ -59,47 +66,259 @@
     </div>
 </template>
 
+<style>
+    .live-page .page-content {
+        background: #000;
+        padding: 0;
+    }
+    
+    .live-page .video-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    
+    .live-page .video-placeholder {
+        text-align: center;
+        color: white;
+    }
+    
+    .live-page .video-placeholder i {
+        font-size: 64px;
+        opacity: 0.5;
+        margin-bottom: 20px;
+    }
+    
+    .live-page .video-placeholder .stream-url {
+        font-size: 11px;
+        opacity: 0.5;
+        margin-top: 15px;
+        word-break: break-all;
+        padding: 0 20px;
+    }
+    
+    .live-page .camera-switch {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255,255,255,0.2);
+        padding: 8px 15px;
+        border-radius: 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+        backdrop-filter: blur(10px);
+        z-index: 100;
+    }
+    
+    .live-page .controls-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 30px 20px;
+        background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        z-index: 100;
+    }
+    
+    .live-page .controls-row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 25px;
+    }
+    
+    .live-page .control-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+    
+    .live-page .control-btn.primary {
+        width: 66px;
+        height: 66px;
+        background: #6f86d6;
+    }
+    
+    .live-page .control-btn.recording {
+        background: #ff3b30;
+    }
+    
+    .live-page .control-btn i {
+        font-size: 24px;
+    }
+    
+    .live-page .recording-indicator {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #ff3b30;
+        font-size: 13px;
+    }
+    
+    .live-page .recording-indicator .dot {
+        width: 8px;
+        height: 8px;
+        background: #ff3b30;
+        border-radius: 50%;
+        animation: blink 1s infinite;
+    }
+    
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+</style>
+
 <script>
     return {
         data: function() {
+            var currentCamera = AppStore.state.currentCamera || 'front';
             return {
-                CurrentCamera: AppStore.state.currentCamera,
-                CurrentCameraLabel: AppStore.state.currentCamera === 'front' ? 'Front' : 'Rear',
+                CurrentCamera: currentCamera,
+                CurrentCameraLabel: currentCamera === 'front' ? 'Front' : 'Rear',
+                IsRecording: AppStore.state.isRecording,
                 StreamUrl: AppStore.getCurrentStreamUrl(),
-                IsRecording: AppStore.state.isRecording
+                PlayerStatus: 'Tap to play stream',
+                ShowPlayButton: true
             };
         },
         methods: {
+            startStream: function() {
+                var self = this;
+                var url = AppStore.getCurrentStreamUrl();
+                
+                console.log('[Live] Starting RTSP stream: ' + url);
+                
+                self.$setState({
+                    PlayerStatus: 'Connecting...',
+                    ShowPlayButton: false
+                });
+ 
+                
+                // Check if RtspPlayer plugin is available
+                if (window.RtspPlayer) {
+                    window.RtspPlayer.play(url,
+                        function(status) {
+                            console.log('[Live] Player status:', status);
+                            
+                            if (status === 'PLAYING') {
+                                self.$setState({
+                                    PlayerStatus: 'Playing',
+                                    ShowPlayButton: false
+                                });
+                            } else if (status === 'CLOSED') {
+                                self.$setState({
+                                    PlayerStatus: 'Stream closed',
+                                    ShowPlayButton: true
+                                });
+                            }
+                        },
+                        function(error) {
+                            console.error('[Live] Player error:', error);
+                            self.$setState({
+                                PlayerStatus: 'Error: ' + error,
+                                ShowPlayButton: true
+                            });
+                            
+                            self.$app.toast.show({
+                                text: 'Stream error: ' + error,
+                                position: 'center',
+                                closeTimeout: 3000
+                            });
+                        }
+                    );
+                } else {
+                    console.log('[Live] RtspPlayer plugin not available, trying external player');
+                    self.openExternalPlayer();
+                }
+            },
+            
+            stopStream: function() {
+                console.log('[Live] Stopping stream');
+                
+                if (window.RtspPlayer && window.RtspPlayer.stop) {
+                    window.RtspPlayer.stop(
+                        function() {
+                            console.log('[Live] Stream stopped');
+                        },
+                        function(error) {
+                            console.error('[Live] Stop error:', error);
+                        }
+                    );
+                }
+                
+                this.$setState({
+                    PlayerStatus: 'Stream stopped',
+                    ShowPlayButton: true
+                });
+            },
+            
             switchCamera: function() {
                 var self = this;
+                
+                // Stop current stream first
+                self.stopStream();
+                
+                // Switch camera
                 var newCamera = AppStore.switchCamera();
+                var newUrl = AppStore.getCurrentStreamUrl();
+                
                 self.$setState({
                     CurrentCamera: newCamera,
                     CurrentCameraLabel: newCamera === 'front' ? 'Front' : 'Rear',
-                    StreamUrl: AppStore.getCurrentStreamUrl()
+                    StreamUrl: newUrl,
+                    PlayerStatus: 'Switched to ' + newCamera + ' camera',
+                    ShowPlayButton: true
                 });
                 
                 self.$app.toast.show({
-                    text: 'Switched to ' + (newCamera === 'front' ? 'Front' : 'Rear') + ' camera',
+                    text: 'Switched to ' + newCamera + ' camera',
                     position: 'center',
                     closeTimeout: 1500
                 });
+                
+                // Auto-start new stream after short delay
+                setTimeout(function() {
+                    self.startStream();
+                }, 500);
             },
+            
             takePhoto: function() {
                 this.$app.methods.takePhoto();
             },
+            
             toggleRecording: function() {
                 var self = this;
-                self.$app.methods.toggleRecording().then(function(isRecording) {
+                self.$app.methods.toggleRecording().then(function() {
                     self.$setState({
-                        IsRecording: isRecording
+                        IsRecording: AppStore.state.isRecording
                     });
                 });
             },
+            
             openExternalPlayer: function() {
-                var url = this.StreamUrl;
-                if (window.cordova && cordova.InAppBrowser) {
-                    cordova.InAppBrowser.open(url, '_system');
+                var url = AppStore.getCurrentStreamUrl();
+                
+                this.$setState({
+                    PlayerStatus: 'Opening external player...',
+                    ShowPlayButton: true
+                });
+                
+                // Try to open with system player
+                if (window.cordova && window.cordova.InAppBrowser) {
+                    window.cordova.InAppBrowser.open(url, '_system');
                 } else {
                     window.open(url, '_blank');
                 }
@@ -108,6 +327,16 @@
         on: {
             pageInit: function(e, page) {
                 var self = this;
+                console.log('[Live] Page initialized');
+                
+                // Auto-start stream when page loads
+                // setTimeout(function() {
+                 //    self.startStream();
+               //  }, 500);
+            },
+            pageBeforeRemove: function() {
+                console.log('[Live] Page closing, stopping stream');
+                this.stopStream();
             }
         }
     };
