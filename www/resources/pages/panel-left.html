@@ -25,7 +25,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="/live/" class="item-link item-content panel-close">
+                            <a href="#"  @click="handleLive" class="item-link item-content panel-close">
                                 <div class="item-media"><i class="f7-icons">videocam_fill</i></div>
                                 <div class="item-inner">
                                     <div class="item-title">Live Stream</div>
@@ -88,6 +88,11 @@
                 CameraIP: camera ? camera.ip : '—',
                 IsConnected: AppStore.state.isConnected
             };
+        },
+        methods: {
+            handleLive: function() {
+                this.$app.methods.openLiveStream();
+            }
         },
         on: {
             pageInit: function(e, page) {

@@ -210,7 +210,8 @@ var app = new Framework7({
         // Open live stream
         openLiveStream: function() {
             var self = this;
-            
+            var url = AppStore.getCurrentStreamUrl();
+
             if (!AppStore.state.isConnected) {
                 self.methods.connectToCamera();
                 return;

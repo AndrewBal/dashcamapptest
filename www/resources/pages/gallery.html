@@ -31,8 +31,8 @@
         <div class="page-content">
             <!-- Camera Filter -->
             <div class="camera-filter">
-                <a href="#" class="button {{#js_compare CameraFilter '==' 'front'}}button-fill{{else}}button-outline{{/js_compare}} color-theme" @click="setCameraFilter('front')">Front</a>
-                <a href="#" class="button {{#js_compare CameraFilter '==' 'rear'}}button-fill{{else}}button-outline{{/js_compare}} color-theme" @click="setCameraFilter('rear')">Rear</a>
+                <a href="#" class="button {{#if isFrontCamera}}button-fill{{else}}button-outline{{/if}} color-theme" @click="setCameraFilter('front')">Front</a>
+                <a href="#" class="button {{#if isRearCamera}}button-fill{{else}}button-outline{{/if}} color-theme" @click="setCameraFilter('rear')">Rear</a>
             </div>
 
             <div class="tabs">
@@ -44,11 +44,14 @@
                         <p>Loading...</p>
                     </div>
                     {{else}}
-                        {{#if LoopFiles.length}}
+                        {{#if hasLoopFiles}}
                         <div class="gallery-grid">
                             {{#each LoopFiles}}
                             <div class="gallery-item" data-url="{{url}}">
-                                <img src="{{thumbnailUrl}}" onerror="this.style.display='none'">
+                                <div class="item-thumb-placeholder">
+                                    <i class="f7-icons">film</i>
+                                </div>
+                                <img class="item-thumb" src="{{thumbnailUrl}}" onload="this.style.opacity=1" onerror="this.style.display='none'">
                                 <div class="item-overlay">{{formattedDate}}</div>
                                 <div class="item-badge"><i class="f7-icons">play_fill</i></div>
                             </div>
@@ -71,11 +74,14 @@
                         <p>Loading...</p>
                     </div>
                     {{else}}
-                        {{#if LockedFiles.length}}
+                        {{#if hasLockedFiles}}
                         <div class="gallery-grid">
                             {{#each LockedFiles}}
                             <div class="gallery-item" data-url="{{url}}">
-                                <img src="{{thumbnailUrl}}" onerror="this.style.display='none'">
+                                <div class="item-thumb-placeholder">
+                                    <i class="f7-icons">lock_fill</i>
+                                </div>
+                                <img class="item-thumb" src="{{thumbnailUrl}}" onload="this.style.opacity=1" onerror="this.style.display='none'">
                                 <div class="item-overlay">{{formattedDate}}</div>
                                 <div class="item-badge"><i class="f7-icons">lock_fill</i></div>
                             </div>
@@ -98,11 +104,14 @@
                         <p>Loading...</p>
                     </div>
                     {{else}}
-                        {{#if SnapshotFiles.length}}
+                        {{#if hasSnapshotFiles}}
                         <div class="gallery-grid">
                             {{#each SnapshotFiles}}
                             <div class="gallery-item" data-url="{{url}}">
-                                <img src="{{url}}" onerror="this.style.display='none'">
+                                <div class="item-thumb-placeholder">
+                                    <i class="f7-icons">photo</i>
+                                </div>
+                                <img class="item-thumb" src="{{url}}" onload="this.style.opacity=1" onerror="this.style.display='none'">
                                 <div class="item-overlay">{{formattedDate}}</div>
                                 <div class="item-badge"><i class="f7-icons">photo</i></div>
                             </div>
@@ -121,15 +130,65 @@
     </div>
 </template>
 
+<style>
+    .gallery-page .gallery-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        background: #f0f0f0;
+    }
+    
+    .gallery-page .gallery-item .item-thumb-placeholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        z-index: 1;
+    }
+    
+    .gallery-page .gallery-item .item-thumb-placeholder i {
+        font-size: 32px;
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .gallery-page .gallery-item .item-thumb {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 2;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    
+    .gallery-page .gallery-item .item-overlay {
+        z-index: 3;
+    }
+    
+    .gallery-page .gallery-item .item-badge {
+        z-index: 3;
+    }
+</style>
+
 <script>
     return {
         data: function() {
             return {
                 Loading: false,
                 CameraFilter: 'front',
+                isFrontCamera: true,
+                isRearCamera: false,
                 LoopFiles: [],
                 LockedFiles: [],
-                SnapshotFiles: []
+                SnapshotFiles: [],
+                hasLoopFiles: false,
+                hasLockedFiles: false,
+                hasSnapshotFiles: false
             };
         },
         methods: {
@@ -165,19 +224,40 @@
                             });
                         };
                         
+                        var loopFiles = formatFiles(results[0] || []);
+                        var lockedFiles = formatFiles(results[1] || []);
+                        var snapshotFiles = formatFiles(results[2] || []);
+                        
                         self.$setState({
                             Loading: false,
-                            LoopFiles: formatFiles(results[0]),
-                            LockedFiles: formatFiles(results[1]),
-                            SnapshotFiles: formatFiles(results[2])
+                            LoopFiles: loopFiles,
+                            LockedFiles: lockedFiles,
+                            SnapshotFiles: snapshotFiles,
+                            hasLoopFiles: loopFiles.length > 0,
+                            hasLockedFiles: lockedFiles.length > 0,
+                            hasSnapshotFiles: snapshotFiles.length > 0
                         });
-                    }).catch(function() {
-                        self.$setState({ Loading: false });
+                    }).catch(function(err) {
+                        console.error('Failed to load gallery files:', err);
+                        self.$setState({ 
+                            Loading: false,
+                            hasLoopFiles: false,
+                            hasLockedFiles: false,
+                            hasSnapshotFiles: false
+                        });
                         self.$app.toast.show({
                             text: 'Failed to load gallery',
                             position: 'center',
                             closeTimeout: 2000
                         });
+                    });
+                }).catch(function(err) {
+                    console.error('Failed to stop recording:', err);
+                    self.$setState({ Loading: false });
+                    self.$app.toast.show({
+                        text: 'Failed to access gallery',
+                        position: 'center',
+                        closeTimeout: 2000
                     });
                 });
             },
@@ -185,7 +265,11 @@
                 var self = this;
                 if (self.CameraFilter !== filter) {
                     self.CameraFilter = filter;
-                    self.$setState({ CameraFilter: filter });
+                    self.$setState({ 
+                        CameraFilter: filter,
+                        isFrontCamera: filter === 'front',
+                        isRearCamera: filter === 'rear'
+                    });
                     self.loadAllFiles();
                 }
             },

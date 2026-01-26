@@ -2,6 +2,10 @@
  * DashCam API Module
  * Camera IP: 192.168.0.1
  * Ports: TCP 80 (HTTP), TCP 554 (RTSP)
+ * 
+ * Response formats:
+ * - File list: sd//norm/2026_01_24_115023_00.TS;sd//norm/2026_01_24_114922_01.TS;
+ * - File count: var count="44";
  */
 
 window.DASHCAM_API = {
@@ -39,39 +43,33 @@ window.DASHCAM_API = {
 
     /**
      * Check connection to camera
-     * Tries multiple methods to verify connection
      */
     checkConnection: function() {
         var self = this;
         return new Promise(function(resolve, reject) {
-            var url = self.baseUrl + '/cgi-bin/hisnet/getdirfilecount.cgi?-dir=norm';
+            var url = self.baseUrl + '/cgi-bin/hisnet/getdirfilecount.cgi?&-dir=norm';
             
             console.log('[DashCam API] Checking connection to: ' + url);
             
             var xhr = new XMLHttpRequest();
-            xhr.timeout = 5000; // Increased timeout to 5 seconds
+            xhr.timeout = 5000;
             
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     console.log('[DashCam API] Response status: ' + xhr.status);
-                    console.log('[DashCam API] Response text: ' + xhr.responseText.substring(0, 100));
+                    console.log('[DashCam API] Response text: ' + xhr.responseText);
                     
-                    // Check if we got any response (even if not 200)
-                    // Some cameras return different status codes
-                    if (xhr.status === 200 || xhr.status === 0 && xhr.responseText) {
-                        // Check if response contains expected data
-                        if (xhr.responseText && xhr.responseText.indexOf('count') !== -1) {
-                            console.log('[DashCam API] Connection SUCCESS (valid response)');
-                            resolve(true);
-                        } else if (xhr.status === 200) {
-                            console.log('[DashCam API] Connection SUCCESS (status 200)');
+                    if (xhr.status === 200) {
+                        // Check for var count="X"; format
+                        if (xhr.responseText && xhr.responseText.indexOf('count=') !== -1) {
+                            console.log('[DashCam API] Connection SUCCESS');
                             resolve(true);
                         } else {
-                            console.log('[DashCam API] Connection FAILED (invalid response)');
-                            resolve(false);
+                            console.log('[DashCam API] Connection SUCCESS (status 200)');
+                            resolve(true);
                         }
                     } else {
-                        console.log('[DashCam API] Connection FAILED (status: ' + xhr.status + ')');
+                        console.log('[DashCam API] Connection FAILED');
                         resolve(false);
                     }
                 }
@@ -79,14 +77,12 @@ window.DASHCAM_API = {
             
             xhr.onerror = function(e) {
                 console.log('[DashCam API] Connection ERROR: ', e);
-                // Try alternative check
-                self.checkConnectionAlternative().then(resolve);
+                resolve(false);
             };
             
             xhr.ontimeout = function() {
                 console.log('[DashCam API] Connection TIMEOUT');
-                // Try alternative check
-                self.checkConnectionAlternative().then(resolve);
+                resolve(false);
             };
             
             try {
@@ -94,72 +90,8 @@ window.DASHCAM_API = {
                 xhr.send();
             } catch (e) {
                 console.log('[DashCam API] XHR Exception: ', e);
-                self.checkConnectionAlternative().then(resolve);
-            }
-        });
-    },
-
-    /**
-     * Alternative connection check using fetch API
-     */
-    checkConnectionAlternative: function() {
-        var self = this;
-        var url = self.baseUrl + '/';
-        
-        console.log('[DashCam API] Trying alternative check: ' + url);
-        
-        return new Promise(function(resolve) {
-            if (typeof fetch !== 'undefined') {
-                fetch(url, { 
-                    method: 'GET',
-                    mode: 'no-cors', // This allows the request but we can't read response
-                    cache: 'no-cache'
-                })
-                .then(function(response) {
-                    // With no-cors, response.type will be 'opaque' and we can't read status
-                    // But if we get here without error, connection likely exists
-                    console.log('[DashCam API] Fetch response type: ' + response.type);
-                    resolve(true);
-                })
-                .catch(function(error) {
-                    console.log('[DashCam API] Fetch error: ', error);
-                    resolve(false);
-                });
-            } else {
                 resolve(false);
             }
-        });
-    },
-
-    /**
-     * Simple ping check - just tries to reach the IP
-     */
-    pingCheck: function() {
-        var self = this;
-        return new Promise(function(resolve) {
-            var img = new Image();
-            var timeout;
-            
-            img.onload = function() {
-                clearTimeout(timeout);
-                console.log('[DashCam API] Ping SUCCESS');
-                resolve(true);
-            };
-            
-            img.onerror = function() {
-                clearTimeout(timeout);
-                // Error could mean server exists but no image - still connected
-                console.log('[DashCam API] Ping error (might still be connected)');
-                resolve(true); // Assume connected if we get error response
-            };
-            
-            timeout = setTimeout(function() {
-                console.log('[DashCam API] Ping TIMEOUT');
-                resolve(false);
-            }, 3000);
-            
-            // Try to load a small resource
-            img.src = self.baseUrl + '/favicon.ico?' + Date.now();
         });
     },
 
@@ -172,7 +104,7 @@ window.DASHCAM_API = {
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
-                    resolve(xhr.responseText.indexOf('Success') !== -1 || xhr.status === 200);
+                    resolve(xhr.status === 200);
                 }
             };
             xhr.onerror = function() { reject('Request failed'); };
@@ -187,14 +119,18 @@ window.DASHCAM_API = {
     startRecording: function() {
         var self = this;
         return new Promise(function(resolve, reject) {
+            var url = self.baseUrl + '/cgi-bin/hisnet/workmodecmd.cgi?-cmd=start';
+            console.log('[DashCam API] Start recording: ' + url);
+            
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
-                    resolve(xhr.responseText.indexOf('Success') !== -1 || xhr.status === 200);
+                    console.log('[DashCam API] Start recording response: ' + xhr.responseText);
+                    resolve(xhr.status === 200);
                 }
             };
             xhr.onerror = function() { reject('Request failed'); };
-            xhr.open('GET', self.baseUrl + '/cgi-bin/hisnet/workmodecmd.cgi?-cmd=start', true);
+            xhr.open('GET', url, true);
             xhr.send();
         });
     },
@@ -205,39 +141,71 @@ window.DASHCAM_API = {
     stopRecording: function() {
         var self = this;
         return new Promise(function(resolve, reject) {
+            var url = self.baseUrl + '/cgi-bin/hisnet/workmodecmd.cgi?-cmd=stop';
+            console.log('[DashCam API] Stop recording: ' + url);
+            
             var xhr = new XMLHttpRequest();
+            xhr.timeout = 5000;
+            
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
-                    resolve(xhr.responseText.indexOf('Success') !== -1 || xhr.status === 200);
+                    console.log('[DashCam API] Stop recording response: ' + xhr.responseText);
+                    resolve(xhr.status === 200);
                 }
             };
-            xhr.onerror = function() { reject('Request failed'); };
-            xhr.open('GET', self.baseUrl + '/cgi-bin/hisnet/workmodecmd.cgi?-cmd=stop', true);
+            xhr.onerror = function(e) { 
+                console.log('[DashCam API] Stop recording error:', e);
+                reject('Request failed'); 
+            };
+            xhr.ontimeout = function() {
+                console.log('[DashCam API] Stop recording timeout');
+                resolve(true);
+            };
+            xhr.open('GET', url, true);
             xhr.send();
         });
     },
 
     /**
      * Get file count
+     * Response format: var count="44";
      */
     getFileCount: function(dir) {
         var self = this;
         return new Promise(function(resolve, reject) {
+            var url = self.baseUrl + '/cgi-bin/hisnet/getdirfilecount.cgi?&-dir=' + dir;
+            console.log('[DashCam API] Get file count: ' + url);
+            
             var xhr = new XMLHttpRequest();
+            xhr.timeout = 5000;
+            
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
-                    var match = xhr.responseText.match(/count=(\d+)/);
-                    resolve(match ? parseInt(match[1], 10) : 0);
+                    console.log('[DashCam API] File count response for ' + dir + ': ' + xhr.responseText);
+                    
+                    // Parse: var count="44";
+                    var match = xhr.responseText.match(/count="?(\d+)"?/);
+                    var count = match ? parseInt(match[1], 10) : 0;
+                    console.log('[DashCam API] Parsed count: ' + count);
+                    resolve(count);
                 }
             };
-            xhr.onerror = function() { resolve(0); };
-            xhr.open('GET', self.baseUrl + '/cgi-bin/hisnet/getdirfilecount.cgi?-dir=' + dir, true);
+            xhr.onerror = function(e) { 
+                console.log('[DashCam API] File count error:', e);
+                resolve(0); 
+            };
+            xhr.ontimeout = function() {
+                console.log('[DashCam API] File count timeout');
+                resolve(0);
+            };
+            xhr.open('GET', url, true);
             xhr.send();
         });
     },
 
     /**
      * Get file list
+     * Response format: sd//norm/2026_01_24_115023_00.TS;sd//norm/2026_01_24_114922_01.TS;
      */
     getFileList: function(dir, start, end) {
         var self = this;
@@ -245,40 +213,76 @@ window.DASHCAM_API = {
         end = end || 50;
         
         return new Promise(function(resolve, reject) {
+            var url = self.baseUrl + '/cgi-bin/hisnet/getdirfilelist.cgi?&-dir=' + dir + '&-start=' + start + '&-end=' + end;
+            console.log('[DashCam API] Get file list: ' + url);
+            
             var xhr = new XMLHttpRequest();
+            xhr.timeout = 10000;
+            
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
-                    resolve(self.parseFileList(xhr.responseText, dir));
+                    console.log('[DashCam API] File list raw response for ' + dir + ':', xhr.responseText);
+                    var files = self.parseFileList(xhr.responseText, dir);
+                    console.log('[DashCam API] Parsed ' + files.length + ' files');
+                    resolve(files);
                 }
             };
-            xhr.onerror = function() { resolve([]); };
-            xhr.open('GET', self.baseUrl + '/cgi-bin/hisnet/getdirfilelist.cgi?-dir=' + dir + '&-start=' + start + '&-end=' + end, true);
+            xhr.onerror = function(e) { 
+                console.log('[DashCam API] File list error:', e);
+                resolve([]); 
+            };
+            xhr.ontimeout = function() {
+                console.log('[DashCam API] File list timeout');
+                resolve([]);
+            };
+            xhr.open('GET', url, true);
             xhr.send();
         });
     },
 
     /**
      * Parse file list response
+     * Input format: sd//norm/2026_01_24_115023_00.TS;sd//norm/2026_01_24_114922_01.TS;
+     * Files are separated by semicolon (;)
      */
     parseFileList: function(response, dir) {
         var files = [];
-        var lines = response.split('\n');
         var self = this;
         
-        for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].trim();
-            if (line && line.indexOf('count=') === -1) {
-                var match = line.match(/filename=([^\s&]+)/);
-                if (match) {
-                    var filename = match[1];
-                    files.push({
-                        filename: filename,
-                        dir: dir,
-                        url: self.getFileUrl(dir, filename),
-                        thumbnailUrl: self.getThumbnailUrl(dir, filename),
-                        dateTime: self.parseDateTime(filename)
-                    });
-                }
+        if (!response || response.trim() === '') {
+            console.log('[DashCam API] Empty response for parseFileList');
+            return files;
+        }
+        
+        // Split by semicolon
+        var entries = response.split(';');
+        console.log('[DashCam API] Split into ' + entries.length + ' entries');
+        
+        for (var i = 0; i < entries.length; i++) {
+            var entry = entries[i].trim();
+            
+            // Skip empty entries
+            if (!entry) continue;
+            
+            // Entry format: sd//norm/2026_01_24_115023_00.TS
+            // Extract filename from path
+            var parts = entry.split('/');
+            var filename = parts[parts.length - 1]; // Get last part (filename)
+            
+            if (filename && (filename.indexOf('.TS') !== -1 || filename.indexOf('.JPG') !== -1 || 
+                            filename.indexOf('.ts') !== -1 || filename.indexOf('.jpg') !== -1)) {
+                
+                var fileObj = {
+                    filename: filename,
+                    dir: dir,
+                    path: entry, // Full path from response: sd//norm/2026_01_24_115023_00.TS
+                    url: self.baseUrl + '/' + entry, // http://192.168.0.1/sd//norm/2026_01_24_115023_00.TS
+                    thumbnailUrl: self.getThumbnailUrl(entry, filename),
+                    dateTime: self.parseDateTime(filename)
+                };
+                
+                console.log('[DashCam API] Parsed file:', filename, fileObj.url);
+                files.push(fileObj);
             }
         }
         
@@ -287,35 +291,46 @@ window.DASHCAM_API = {
 
     /**
      * Parse date/time from filename
-     * Format: 2026_01_20_151021_00.TS
+     * Format: 2026_01_24_115023_00.TS or 2026_01_24_115023_00_b.TS (rear)
      */
     parseDateTime: function(filename) {
         var match = filename.match(/(\d{4})_(\d{2})_(\d{2})_(\d{2})(\d{2})(\d{2})/);
         if (match) {
-            return new Date(match[1], parseInt(match[2]) - 1, match[3], match[4], match[5], match[6]);
+            return new Date(
+                parseInt(match[1], 10),      // year
+                parseInt(match[2], 10) - 1,  // month (0-indexed)
+                parseInt(match[3], 10),      // day
+                parseInt(match[4], 10),      // hour
+                parseInt(match[5], 10),      // minute
+                parseInt(match[6], 10)       // second
+            );
         }
         return null;
     },
 
     /**
-     * Get file URL
-     */
-    getFileUrl: function(dir, filename) {
-        return this.baseUrl + '/sd//' + dir + '/' + filename;
-    },
-
-    /**
      * Get thumbnail URL
+     * @param {string} path - Full path from response: sd//norm/2026_01_24_115023_00.TS
+     * @param {string} filename - Just filename: 2026_01_24_115023_00.TS
      */
-    getThumbnailUrl: function(dir, filename) {
-        var thumbName = filename.replace(/\.(TS|ts)$/, '.THM');
-        return this.baseUrl + '/sd//' + dir + '/' + thumbName;
+    getThumbnailUrl: function(path, filename) {
+        // For photos (JPG) - use same URL
+        if (filename.toUpperCase().indexOf('.JPG') !== -1) {
+            return this.baseUrl + '/' + path;
+        }
+        
+        // For videos - replace .TS with .THM
+        var thumbPath = path.replace(/\.(TS|ts)$/i, '.THM');
+        return this.baseUrl + '/' + thumbPath;
     },
 
     /**
-     * Get gallery files
+     * Get gallery files by type and camera
+     * @param {string} type - 'loop', 'locked', or 'snapshot'
+     * @param {string} camera - 'front' or 'rear'
      */
     getGalleryFiles: function(type, camera) {
+        var self = this;
         camera = camera || 'front';
         var dir;
         
@@ -327,7 +342,41 @@ window.DASHCAM_API = {
             dir = camera === 'front' ? this.directories.snapshotFront : this.directories.snapshotRear;
         }
         
+        console.log('[DashCam API] getGalleryFiles type=' + type + ', camera=' + camera + ', dir=' + dir);
+        
+        if (!dir) {
+            console.log('[DashCam API] Invalid type or camera');
+            return Promise.resolve([]);
+        }
+        
         return this.getFileList(dir);
+    },
+
+    /**
+     * Get all file counts
+     */
+    getAllFileCounts: function() {
+        var self = this;
+        return Promise.all([
+            self.getFileCount(self.directories.loopFront),
+            self.getFileCount(self.directories.loopRear),
+            self.getFileCount(self.directories.lockedFront),
+            self.getFileCount(self.directories.lockedRear),
+            self.getFileCount(self.directories.snapshotFront),
+            self.getFileCount(self.directories.snapshotRear)
+        ]).then(function(counts) {
+            return {
+                loop: counts[0] + counts[1],
+                loopFront: counts[0],
+                loopRear: counts[1],
+                locked: counts[2] + counts[3],
+                lockedFront: counts[2],
+                lockedRear: counts[3],
+                snapshot: counts[4] + counts[5],
+                snapshotFront: counts[4],
+                snapshotRear: counts[5]
+            };
+        });
     }
 };
 
