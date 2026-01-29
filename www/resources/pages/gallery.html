@@ -6,13 +6,13 @@
             <div class="navbar-inner">
                 <div class="left">
                     <a href="/panel-left/" class="link icon-only">
-                        <i class="f7-icons">bars</i>
+                        <i class="f7-icons icon-menu size-21"></i>
                     </a>
                 </div>
                 <div class="title">Gallery</div>
                 <div class="right">
                     <a href="#" class="link icon-only" @click="refreshGallery">
-                        <i class="f7-icons">arrow_clockwise</i>
+                        <i class="f7-icons icon-update size-21"></i>
                     </a>
                 </div>
             </div>
@@ -31,8 +31,8 @@
         <div class="page-content">
             <!-- Camera Filter -->
             <div class="camera-filter">
-                <a href="#" class="button {{#if isFrontCamera}}button-fill{{else}}button-outline{{/if}} color-theme" @click="setCameraFilter('front')">Front</a>
-                <a href="#" class="button {{#if isRearCamera}}button-fill{{else}}button-outline{{/if}} color-theme" @click="setCameraFilter('rear')">Rear</a>
+                <a href="#" class="button  button-fill  color-theme" @click="setCameraFilter('front')">Front</a>
+                <a href="#" class="button  button-fill  color-theme" @click="setCameraFilter('rear')">Rear</a>
             </div>
 
             <div class="tabs">
@@ -195,12 +195,12 @@
             loadAllFiles: function() {
                 var self = this;
                 
-                if (!AppStore.state.isConnected) {
-                    self.$app.dialog.alert('Please connect to camera first', 'Not Connected', function() {
-                        mainView.router.back();
-                    });
-                    return;
-                }
+                // if (!AppStore.state.isConnected) {
+                //     self.$app.dialog.alert('Please connect to camera first', 'Not Connected', function() {
+                //         mainView.router.back();
+                //     });
+                //     return;
+                // }
                 
                 self.$setState({ Loading: true });
                 

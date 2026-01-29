@@ -4,7 +4,7 @@
             <div class="page-content">
                 <!-- Header -->
                 <div class="panel-header bg-gradient">
-                    <div class="block no-margin padding">
+                    <div class="block no-margin no-padding ">
                         <div class="logo">
                             <div class="logo-text">DashCam</div>
                         </div>
@@ -13,20 +13,24 @@
                     </div>
                 </div>
 
+ 
+              
+          
+
                 <!-- Menu List -->
                 <div class="list no-hairlines no-hairlines-between no-chevron margin-top-half">
                     <ul>
                         <li>
                             <a href="/" data-clear-previous-history="true" class="item-link item-content panel-close">
-                                <div class="item-media"><i class="f7-icons">house_fill</i></div>
+                                <div class="item-media"><i class="f7-icons icon-home"></i></div>
                                 <div class="item-inner">
                                     <div class="item-title">Home</div>
                                 </div>
                             </a>
                         </li>
                         <li>
-                            <a href="#"  @click="handleLive" class="item-link item-content panel-close">
-                                <div class="item-media"><i class="f7-icons">videocam_fill</i></div>
+                            <a href="#" @click="handleLive" class="item-link item-content panel-close">
+                                <div class="item-media"><i class="f7-icons icon-live"></i></div>
                                 <div class="item-inner">
                                     <div class="item-title">Live Stream</div>
                                 </div>
@@ -34,7 +38,7 @@
                         </li>
                         <li>
                             <a href="/gallery/" class="item-link item-content panel-close">
-                                <div class="item-media"><i class="f7-icons">photo_on_rectangle</i></div>
+                                <div class="item-media"><i class="f7-icons icon-gallery"></i></div>
                                 <div class="item-inner">
                                     <div class="item-title">Gallery</div>
                                 </div>
@@ -50,7 +54,7 @@
                         </li> -->
                         <li>
                             <a href="/camera-settings/" class="item-link item-content panel-close">
-                                <div class="item-media"><i class="f7-icons">camera_fill</i></div>
+                                <div class="item-media"><i class="f7-icons icon-setting"></i></div>
                                 <div class="item-inner">
                                     <div class="item-title">Camera Settings</div>
                                 </div>
@@ -58,7 +62,7 @@
                         </li>
                         <li>
                             <a href="/info/" class="item-link item-content panel-close">
-                                <div class="item-media"><i class="f7-icons">info_circle_fill</i></div>
+                                <div class="item-media"><i class="f7-icons icon-help"></i></div>
                                 <div class="item-inner">
                                     <div class="item-title">Info & Help</div>
                                 </div>
@@ -67,13 +71,16 @@
                     </ul>
                 </div>
 
-                <!-- Connection Status -->
-                <div class="block">
-                    <div class="connection-status-panel">
-                        <span class="status-dot {{#if IsConnected}}connected{{else}}disconnected{{/if}}"></span>
-                        <span>{{#if IsConnected}}Connected{{else}}Not Connected{{/if}}</span>
-                    </div>
-                </div>
+
+                <!-- Connection Status Panel -->
+                          <div class="panel-bottom-status">
+                            <div class="connection-status-panel">
+                                <span class="status-dot {{#if IsConnected}}connected{{else}}disconnected{{/if}}"></span>
+                                <span>{{#if IsConnected}}Connected{{else}}Not Connected{{/if}}</span>
+                            </div>
+                        </div>
+
+
             </div>
         </div>
     </div>
@@ -81,7 +88,7 @@
 
 <script>
     return {
-        data: function() {
+        data: function () {
             var camera = AppStore.state.selectedCamera;
             return {
                 CameraName: camera ? camera.name : 'No camera selected',
@@ -90,12 +97,12 @@
             };
         },
         methods: {
-            handleLive: function() {
+            handleLive: function () {
                 this.$app.methods.openLiveStream();
             }
         },
         on: {
-            pageInit: function(e, page) {
+            pageInit: function (e, page) {
                 var self = this;
             }
         }

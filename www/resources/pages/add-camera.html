@@ -12,18 +12,34 @@
                 <div class="title">Add Camera</div>
                 <div class="right">
                     <a href="#" class="link" @click="saveCamera">
-                        <i class="f7-icons">checkmark</i>
+                        <i class="f7-icons icon-check size-21"></i>
                     </a>
                 </div>
             </div>
         </div>
+
+
+            <div class="toolbar toolbar-bottom no-hairline">
+            <div class="toolbar-inner ">
+
+                     <!-- Test Connection -->
+            <div class="block display-flex justify-content-center w-100">
+                <a href="#" class="button button-outline button-large custom-button" @click="testConnection">
+                    Test Connection
+                </a>
+            </div>
+            </div>
+        </div>
+
+
+      
 
         <!-- Page Content -->
         <div class="page-content">
             <!-- Instructions -->
             <div class="block text-align-center">
                 <div class="instruction-icon">
-                    <i class="f7-icons">wifi</i>
+                    <i class="f7-icons text-color-gray">wifi</i>
                 </div>
                 <p class="text-color-gray">To add a new dashcam, first connect to its WiFi network, then enter the details below.</p>
             </div>
@@ -33,7 +49,7 @@
                 <div class="list no-hairlines-md">
                     <ul>
                         <li class="item-content item-input">
-                            <div class="item-media"><i class="f7-icons color-theme">textformat</i></div>
+                            <div class="item-media"><i class="f7-icons color-theme icon-cam"></i></div>
                             <div class="item-inner">
                                 <div class="item-title item-label">Camera Name</div>
                                 <div class="item-input-wrap">
@@ -42,7 +58,7 @@
                             </div>
                         </li>
                         <li class="item-content item-input">
-                            <div class="item-media"><i class="f7-icons color-theme">globe</i></div>
+                            <div class="item-media"><i class="f7-icons color-theme icon-ip"></i></div>
                             <div class="item-inner">
                                 <div class="item-title item-label">IP Address</div>
                                 <div class="item-input-wrap">
@@ -51,7 +67,7 @@
                             </div>
                         </li>
                         <li class="item-content item-input">
-                            <div class="item-media"><i class="f7-icons color-theme">wifi</i></div>
+                            <div class="item-media"><i class="f7-icons color-theme icon-wifi"></i></div>
                             <div class="item-inner">
                                 <div class="item-title item-label">WiFi SSID (optional)</div>
                                 <div class="item-input-wrap">
@@ -74,12 +90,7 @@
                 </ol>
             </div>
 
-            <!-- Test Connection -->
-            <div class="block">
-                <a href="#" class="button button-outline button-large color-theme" @click="testConnection">
-                    Test Connection
-                </a>
-            </div>
+         
         </div>
     </div>
 </template>

@@ -4,10 +4,10 @@
 
 :root {
     --f7-theme-color: #fff;
-    --f7-theme-color-rgb: 111, 134, 214;
+    --f7-theme-color-rgb: 227, 7, 43;
     --gradient-start: #48c6ef;
-    --gradient-end: #6f86d6;
-    --primary-color: #6f86d6;
+    --gradient-end: #e3072b;
+    --primary-color: #e3072b;
     --f7-dialog-button-text-color: #333;
 }
 
@@ -15,11 +15,20 @@
    Main Button Style
    ============================================ */
 
-.btn-cs {
+
+.w-100 {
     width: 100%;
-    max-width: 180px;
+}
+
+.color-green {
+    color: #5fb257;
+}
+.btn-cs,
+.custom-button {
+    width: 100%;
+    max-width: 280px;
     height: 50px;
-    background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+    background: #e3072b;
     color: white;
     font-size: 15px;
     text-transform: uppercase;
@@ -54,7 +63,7 @@
 }
 
 .navbar .navbar-bg {
-    background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+    background: #333;
 }
 
 .navbar .title,
@@ -106,7 +115,21 @@ top: -30px;
 }
 
 .panel-header.bg-gradient {
-    background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+    background: #333;
+}
+
+.page[data-name="panel-left"] {
+     background: #333;
+}
+
+
+.page[data-name="panel-left"] .list ul {
+    background: #333;
+}
+
+.page[data-name="panel-left"] .item-title,
+.page[data-name="panel-left"] .connection-status-panel span {
+    color: #fff;
 }
 
 .panel-header .logo-text {
@@ -121,7 +144,7 @@ top: -30px;
 }
 
 .panel-left .list .item-media i {
-    color: var(--primary-color);
+    color: #fff;
 }
 
 .connection-status-panel {
@@ -129,7 +152,7 @@ top: -30px;
     align-items: center;
     gap: 8px;
     padding: 10px 15px;
-    background: #f8f8f8;
+    background: #333;
     border-radius: 8px;
 }
 
@@ -201,7 +224,7 @@ top: -30px;
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+    background: #333;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -347,7 +370,7 @@ top: -30px;
 
 .gallery-page .toolbar.tabbar {
     --f7-tabbar-bg-color: transparent;
-    background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+    background: #333;
 }
 
 .gallery-page .tab-link {
@@ -456,11 +479,55 @@ top: -30px;
    ============================================ */
 
 .color-theme {
-    color: var(--primary-color);
+    color: #ccc;
 }
 
 .bg-gradient {
     background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+}
+
+
+/* Panel Bottom Status - Fixed */
+.panel-bottom-status {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 15px;
+ 
+}
+
+.panel-left .page-content {
+    padding-bottom: 70px; /* Space for fixed bottom status */
+}
+
+
+.color-lightgray {
+    color: #ccc;
+}
+
+.size-21 {
+    font-size: 21px;
+}   
+
+.size-165 {
+    font-size: 165px;
+}
+.bgcolor-black {
+    background-color: #333 ;
+}
+
+.camera-icon-wrapper i::before,
+.action-buttons .action-btn i::before{
+    margin: 0 !important;
+}
+
+
+.md .button-fill, .md .button-fill-md {
+    background-color: #333;
+    border-radius: 50px;
+    color: #fff;
+    width: 100%;
 }
 
 /* ============================================

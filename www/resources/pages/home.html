@@ -6,13 +6,13 @@
             <div class="navbar-inner">
                 <div class="left">
                     <a href="/panel-left/" class="link icon-only">
-                        <i class="f7-icons">bars</i>
+                        <i class="f7-icons icon-menu size-21"></i>
                     </a>
                 </div>
                 <div class="title">Home</div>
                 <div class="right">
                     <a href="#" class="link icon-only" @click="openCameraSelector">
-                        <i class="f7-icons">plus_circle</i>
+                        <i class="f7-icons icon-add size-21"></i>
                     </a>
                 </div>
             </div>
@@ -21,9 +21,11 @@
         <!-- Toolbar Bottom -->
         <div class="toolbar toolbar-bottom no-hairline">
             <div class="toolbar-inner toolbar-buttons">
-                <a href="#" class="btn-cs {{#if IsConnected}}btn-connected{{/if}}" @click="handleConnect">
+
+                <a href="#" class="btn-cs bgcolor-black {{#if IsConnected}}btn-connected{{/if}}" @click="handleConnect">
                     {{#if IsConnected}}CONNECTED{{else}}CONNECT{{/if}}
                 </a>
+
                 <a href="#" class="btn-cs" @click="handleLive">
                     LIVE
                 </a>
@@ -37,8 +39,8 @@
                 <ul>
                     <li>
                         <a href="#" class="item-link item-content" @click="openCameraSelector">
-                            <div class="item-media"><i class="f7-icons color-theme">camera_fill</i></div>
-                            <div class="item-inner">
+                            <div class="item-media"><i class="f7-icons icon-live color-lightgray size-21"></i></div>
+                            <div class="item-inner" style="border-bottom: 1px solid #ccc;">
                                 <div class="item-title">Select Camera</div>
                                 <div class="item-after">{{SelectedCameraName}}</div>
                             </div>
@@ -57,13 +59,7 @@
 
                 <!-- Camera Icon -->
                 <div class="camera-icon-wrapper">
-                    <svg class="main-bg" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="30" y="30" width="140" height="90" rx="10" stroke="{{#if IsConnected}}#4cd964{{else}}#48c6ef{{/if}}" stroke-width="4" fill="none" opacity="0.3"/>
-                        <circle cx="100" cy="75" r="30" stroke="{{#if IsConnected}}#4cd964{{else}}#6f86d6{{/if}}" stroke-width="4" fill="none" opacity="0.5"/>
-                        <circle cx="100" cy="75" r="15" stroke="{{#if IsConnected}}#4cd964{{else}}#48c6ef{{/if}}" stroke-width="3" fill="none" opacity="0.7"/>
-                        <rect x="20" y="60" width="15" height="30" rx="3" stroke="{{#if IsConnected}}#4cd964{{else}}#6f86d6{{/if}}" stroke-width="3" fill="none" opacity="0.3"/>
-                        <rect x="165" y="60" width="15" height="30" rx="3" stroke="{{#if IsConnected}}#4cd964{{else}}#6f86d6{{/if}}" stroke-width="3" fill="none" opacity="0.3"/>
-                    </svg>
+                    <i class="f7-icons icon-dashcam  size-165 {{#if IsConnected}}color-green{{else}}color-lightgray{{/if}}"></i>
                 </div>
 
                 <!-- Instructions -->
@@ -79,13 +75,13 @@
             {{#if IsConnected}}
             <div class="action-buttons">
                 <a href="#" class="action-btn" @click="takePhoto">
-                    <i class="f7-icons">camera</i>
+                    <i class="f7-icons icon-photo"></i>
                 </a>
                 <a href="#" class="action-btn large" @click="handleLive">
-                    <i class="f7-icons">play_fill</i>
+                    <i class="f7-icons icon-play"></i>
                 </a>
                 <a href="/gallery/" class="action-btn">
-                    <i class="f7-icons">photo_on_rectangle</i>
+                    <i class="f7-icons icon-gallery"></i>
                 </a>
             </div>
             {{/if}}
@@ -95,24 +91,24 @@
 
 <style>
     .btn-connected {
-        background: linear-gradient(to right, #4cd964, #34c759) !important;
+        background: linear-gradient(to right, #5fb257, #52ab4a) !important;
     }
 </style>
 
 <script>
     return {
-        data: function() {
+        data: function () {
             var camera = AppStore.state.selectedCamera;
             return {
-                IsConnected: AppStore.state.isConnected,
+                IsConnected:  AppStore.state.isConnected,
                 SelectedCameraName: camera ? camera.name : 'Default (192.168.0.1)'
             };
         },
         methods: {
-            handleConnect: function() {
+            handleConnect: function () {
                 var self = this;
                 // This will check connection and open WiFi settings if not connected
-                self.$app.methods.connectToCamera().then(function(connected) {
+                self.$app.methods.connectToCamera().then(function (connected) {
                     if (connected) {
                         self.$setState({
                             IsConnected: true
@@ -120,20 +116,20 @@
                     }
                 });
             },
-            handleLive: function() {
+            handleLive: function () {
                 this.$app.methods.openLiveStream();
             },
-            openCameraSelector: function() {
+            openCameraSelector: function () {
                 this.$app.methods.openCameraSelector();
             },
-            takePhoto: function() {
+            takePhoto: function () {
                 this.$app.methods.takePhoto();
             },
-            updateState: function() {
+            updateState: function () {
                 var camera = AppStore.state.selectedCamera;
                 var newConnected = AppStore.state.isConnected;
                 var newCameraName = camera ? camera.name : 'Default (192.168.0.1)';
-                
+
                 // Only update if changed
                 if (newConnected !== this.IsConnected || newCameraName !== this.SelectedCameraName) {
                     this.$setState({
@@ -144,14 +140,14 @@
             }
         },
         on: {
-            pageInit: function(e, page) {
+            pageInit: function (e, page) {
                 var self = this;
-                // Update state every 2 seconds to catch connection changes
-                self.interval = setInterval(function() {
-                    self.updateState();
-                }, 2000);
+                 //  Update state every 2 seconds to catch connection changes
+             self.interval = setInterval(function() {
+                   self.updateState();
+               }, 2000);  
             },
-            pageBeforeRemove: function() {
+            pageBeforeRemove: function () {
                 if (this.interval) {
                     clearInterval(this.interval);
                 }
