@@ -8,7 +8,7 @@ AppStore.init();
 
 // Connection check interval
 var connectionCheckInterval = null;
-// var vConsole = new VConsole();
+var vConsole = new VConsole();
 
 // Create Framework7 App
 var app = new Framework7({

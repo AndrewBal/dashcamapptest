@@ -5,15 +5,36 @@
             <div class="navbar-bg"></div>
             <div class="navbar-inner">
                 <div class="left">
-                    <a href="/panel-left/" class="link icon-only">
+                    {{#if SelectMode}}
+                    <a href="#" class="link" @click="cancelSelection">
+                        <span>Cancel</span>
+                    </a>
+                    {{else}}
+                     <a href="/panel-left/" class="link icon-only">
                         <i class="f7-icons icon-menu size-21"></i>
                     </a>
+                    {{/if}}
                 </div>
-                <div class="title">Gallery</div>
+                <div class="title">
+                    {{#if SelectMode}}
+                    {{SelectedCount}} Selected
+                    {{else}}
+                    Gallery
+                    {{/if}}
+                </div>
                 <div class="right">
-                    <a href="#" class="link icon-only" @click="refreshGallery">
-                        <i class="f7-icons icon-update size-21"></i>
+                    {{#if SelectMode}}
+                    <a href="#" class="link" @click="selectAll">
+                        <span>All</span>
                     </a>
+                    {{else}}
+                    <a href="#" class="link icon-only" @click="refreshGallery">
+                        <i class="f7-icons">arrow_clockwise</i>
+                    </a>
+                    <a href="#" class="link" @click="enableSelectMode">
+                        Select
+                    </a>
+                    {{/if}}
                 </div>
             </div>
         </div>
@@ -27,8 +48,24 @@
             </div>
         </div>
 
+        <!-- Bottom Toolbar (visible in select mode) -->
+        {{#if SelectMode}}
+        <div class="toolbar toolbar-bottom gallery-actions-toolbar">
+            <div class="toolbar-inner">
+                <a href="#" class="link {{#unless hasSelection}}disabled{{/unless}}" @click="downloadSelected">
+                    <i class="f7-icons icon-download"></i>
+                    <span class="font-bold">DOWNLOAD</span>
+                </a>
+                <a href="#" class="link color-red {{#unless hasSelection}}disabled{{/unless}}" @click="deleteSelected">
+                    <i class="f7-icons icon-delete"></i>
+                    <span class="font-bold">DELETE</span>
+                </a>
+            </div>
+        </div>
+        {{/if}}
+
         <!-- Page Content -->
-        <div class="page-content">
+        <div class="page-content {{#if SelectMode}}with-bottom-toolbar{{/if}}">
             <!-- Camera Filter -->
             <div class="camera-filter">
                 <a href="#" class="button  button-fill  color-theme" @click="setCameraFilter('front')">Front</a>
@@ -44,25 +81,30 @@
                         <p>Loading...</p>
                     </div>
                     {{else}}
-                        {{#if hasLoopFiles}}
-                        <div class="gallery-grid">
-                            {{#each LoopFiles}}
-                            <div class="gallery-item" data-url="{{url}}">
-                                <div class="item-thumb-placeholder">
-                                    <i class="f7-icons">film</i>
-                                </div>
-                                <img class="item-thumb" src="{{thumbnailUrl}}" onload="this.style.opacity=1" onerror="this.style.display='none'">
-                                <div class="item-overlay">{{formattedDate}}</div>
-                                <div class="item-badge"><i class="f7-icons">play_fill</i></div>
+                    {{#if hasLoopFiles}}
+                    <div class="gallery-grid">
+                        {{#each LoopFiles}}
+                        <div class="gallery-item {{#if selected}}selected{{/if}}" data-url="{{url}}"
+                            data-filename="{{filename}}" data-type="loop" data-index="{{@index}}">
+                            <div class="item-thumb-placeholder">
+                                <i class="f7-icons">film</i>
                             </div>
-                            {{/each}}
+                            <img class="item-thumb" src="{{thumbnailUrl}}" onload="this.style.opacity=1"
+                                onerror="this.style.display='none'">
+                            <div class="item-overlay">{{formattedDate}}</div>
+                            <div class="item-badge"><i class="f7-icons">play_fill</i></div>
+                            <div class="item-checkbox">
+                                <i class="f7-icons">{{#if selected}}checkmark_circle_fill{{else}}circle{{/if}}</i>
+                            </div>
                         </div>
-                        {{else}}
-                        <div class="gallery-empty">
-                            <i class="f7-icons">film</i>
-                            <p>No loop recordings found</p>
-                        </div>
-                        {{/if}}
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="gallery-empty">
+                        <i class="f7-icons">film</i>
+                        <p>No loop recordings found</p>
+                    </div>
+                    {{/if}}
                     {{/if}}
                 </div>
 
@@ -74,25 +116,30 @@
                         <p>Loading...</p>
                     </div>
                     {{else}}
-                        {{#if hasLockedFiles}}
-                        <div class="gallery-grid">
-                            {{#each LockedFiles}}
-                            <div class="gallery-item" data-url="{{url}}">
-                                <div class="item-thumb-placeholder">
-                                    <i class="f7-icons">lock_fill</i>
-                                </div>
-                                <img class="item-thumb" src="{{thumbnailUrl}}" onload="this.style.opacity=1" onerror="this.style.display='none'">
-                                <div class="item-overlay">{{formattedDate}}</div>
-                                <div class="item-badge"><i class="f7-icons">lock_fill</i></div>
+                    {{#if hasLockedFiles}}
+                    <div class="gallery-grid">
+                        {{#each LockedFiles}}
+                        <div class="gallery-item {{#if selected}}selected{{/if}}" data-url="{{url}}"
+                            data-filename="{{filename}}" data-type="locked" data-index="{{@index}}">
+                            <div class="item-thumb-placeholder">
+                                <i class="f7-icons">lock_fill</i>
                             </div>
-                            {{/each}}
+                            <img class="item-thumb" src="{{thumbnailUrl}}" onload="this.style.opacity=1"
+                                onerror="this.style.display='none'">
+                            <div class="item-overlay">{{formattedDate}}</div>
+                            <div class="item-badge"><i class="f7-icons">lock_fill</i></div>
+                            <div class="item-checkbox">
+                                <i class="f7-icons">{{#if selected}}checkmark_circle_fill{{else}}circle{{/if}}</i>
+                            </div>
                         </div>
-                        {{else}}
-                        <div class="gallery-empty">
-                            <i class="f7-icons">lock</i>
-                            <p>No locked recordings found</p>
-                        </div>
-                        {{/if}}
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="gallery-empty">
+                        <i class="f7-icons">lock</i>
+                        <p>No locked recordings found</p>
+                    </div>
+                    {{/if}}
                     {{/if}}
                 </div>
 
@@ -104,25 +151,30 @@
                         <p>Loading...</p>
                     </div>
                     {{else}}
-                        {{#if hasSnapshotFiles}}
-                        <div class="gallery-grid">
-                            {{#each SnapshotFiles}}
-                            <div class="gallery-item" data-url="{{url}}">
-                                <div class="item-thumb-placeholder">
-                                    <i class="f7-icons">photo</i>
-                                </div>
-                                <img class="item-thumb" src="{{url}}" onload="this.style.opacity=1" onerror="this.style.display='none'">
-                                <div class="item-overlay">{{formattedDate}}</div>
-                                <div class="item-badge"><i class="f7-icons">photo</i></div>
+                    {{#if hasSnapshotFiles}}
+                    <div class="gallery-grid">
+                        {{#each SnapshotFiles}}
+                        <div class="gallery-item {{#if selected}}selected{{/if}}" data-url="{{url}}"
+                            data-filename="{{filename}}" data-type="snapshot" data-index="{{@index}}">
+                            <div class="item-thumb-placeholder">
+                                <i class="f7-icons">photo</i>
                             </div>
-                            {{/each}}
+                            <img class="item-thumb" src="{{url}}" onload="this.style.opacity=1"
+                                onerror="this.style.display='none'">
+                            <div class="item-overlay">{{formattedDate}}</div>
+                            <div class="item-badge"><i class="f7-icons">photo</i></div>
+                            <div class="item-checkbox">
+                                <i class="f7-icons">{{#if selected}}checkmark_circle_fill{{else}}circle{{/if}}</i>
+                            </div>
                         </div>
-                        {{else}}
-                        <div class="gallery-empty">
-                            <i class="f7-icons">photo</i>
-                            <p>No snapshots found</p>
-                        </div>
-                        {{/if}}
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="gallery-empty">
+                        <i class="f7-icons">photo</i>
+                        <p>No snapshots found</p>
+                    </div>
+                    {{/if}}
                     {{/if}}
                 </div>
             </div>
@@ -130,104 +182,135 @@
     </div>
 </template>
 
-<style>
-    .gallery-page .gallery-item {
-        position: relative;
-        overflow: hidden;
-        border-radius: 8px;
-        background: #f0f0f0;
-    }
-    
-    .gallery-page .gallery-item .item-thumb-placeholder {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        z-index: 1;
-    }
-    
-    .gallery-page .gallery-item .item-thumb-placeholder i {
-        font-size: 32px;
-        color: rgba(255, 255, 255, 0.5);
-    }
-    
-    .gallery-page .gallery-item .item-thumb {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: 2;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-    }
-    
-    .gallery-page .gallery-item .item-overlay {
-        z-index: 3;
-    }
-    
-    .gallery-page .gallery-item .item-badge {
-        z-index: 3;
-    }
-</style>
+ 
 
 <script>
     return {
-        data: function() {
+        data: function () {
             return {
                 Loading: false,
                 CameraFilter: 'front',
                 isFrontCamera: true,
                 isRearCamera: false,
-                LoopFiles: [],
-                LockedFiles: [],
-                SnapshotFiles: [],
+                LoopFiles: [
+                    {
+                        NAME: 'LOOP_20250129_143025_A.MP4',
+                        FPATH: '/mnt/sd/DCIM/Movie/',
+                        SIZE: '52428800',
+                        TIME: '1706535025',
+                        ATTR: '32'
+                    },
+                    {
+                        NAME: 'LOOP_20250129_142512_A.MP4',
+                        FPATH: '/mnt/sd/DCIM/Movie/',
+                        SIZE: '48576512',
+                        TIME: '1706534712',
+                        ATTR: '32'
+                    },
+                    {
+                        NAME: 'LOOP_20250129_141958_A.MP4',
+                        FPATH: '/mnt/sd/DCIM/Movie/',
+                        SIZE: '55123456',
+                        TIME: '1706534398',
+                        ATTR: '32'
+                    },
+                    {
+                        NAME: 'LOOP_20250128_180030_A.MP4',
+                        FPATH: '/mnt/sd/DCIM/Movie/',
+                        SIZE: '51234567',
+                        TIME: '1706457630',
+                        ATTR: '32'
+                    }
+                    ],
+LockedFiles: [
+    {
+        NAME: 'LOCK_20250129_120015_A.MP4',
+        FPATH: '/mnt/sd/DCIM/EMR/',
+        SIZE: '62914560',
+        TIME: '1706526015',
+        ATTR: '32'
+    },
+    {
+        NAME: 'LOCK_20250127_093045_A.MP4',
+        FPATH: '/mnt/sd/DCIM/EMR/',
+        SIZE: '58720256',
+        TIME: '1706345445',
+        ATTR: '32'
+    }
+],
+SnapshotFiles: [
+    {
+        NAME: 'SNAP_20250129_150000_A.JPG',
+        FPATH: '/mnt/sd/DCIM/Photo/',
+        SIZE: '2097152',
+        TIME: '1706536800',
+        ATTR: '32'
+    },
+    {
+        NAME: 'SNAP_20250129_144530_A.JPG',
+        FPATH: '/mnt/sd/DCIM/Photo/',
+        SIZE: '1835008',
+        TIME: '1706535930',
+        ATTR: '32'
+    },
+    {
+        NAME: 'SNAP_20250128_110000_A.JPG',
+        FPATH: '/mnt/sd/DCIM/Photo/',
+        SIZE: '2150400',
+        TIME: '1706432400',
+        ATTR: '32'
+    }
+],
                 hasLoopFiles: false,
                 hasLockedFiles: false,
-                hasSnapshotFiles: false
+                hasSnapshotFiles: false,
+                // Selection mode
+                SelectMode: false,
+                SelectedCount: 0,
+                hasSelection: false
             };
         },
         methods: {
-            loadAllFiles: function() {
+            loadAllFiles: function () {
                 var self = this;
-                
-                // if (!AppStore.state.isConnected) {
-                //     self.$app.dialog.alert('Please connect to camera first', 'Not Connected', function() {
-                //         mainView.router.back();
-                //     });
-                //     return;
-                // }
-                
+
+
+                //if (!AppStore.state.isConnected) {
+                //    self.$app.dialog.alert('Please connect to camera first', 'Not Connected', function () {
+                //        mainView.router.back();
+                //    });
+                //    return;
+                //}  
+
+
+
                 self.$setState({ Loading: true });
-                
+
                 // Stop recording first to access files
-                DASHCAM_API.stopRecording().then(function() {
+                DASHCAM_API.stopRecording().then(function () {
                     AppStore.setRecording(false);
-                    
+
                     // Load all files
                     Promise.all([
                         DASHCAM_API.getGalleryFiles('loop', self.CameraFilter),
                         DASHCAM_API.getGalleryFiles('locked', self.CameraFilter),
                         DASHCAM_API.getGalleryFiles('snapshot', self.CameraFilter)
-                    ]).then(function(results) {
-                        // Format dates
-                        var formatFiles = function(files) {
-                            return files.map(function(file) {
-                                file.formattedDate = file.dateTime 
-                                    ? self.$app.methods.formatDate(file.dateTime) 
+                    ]).then(function (results) {
+                        // Format dates and add selected property
+                        var formatFiles = function (files) {
+                            return files.map(function (file) {
+                                file.formattedDate = file.dateTime
+                                    ? self.$app.methods.formatDate(file.dateTime)
                                     : file.filename;
+                                file.selected = false;
                                 return file;
                             });
                         };
-                        
+
                         var loopFiles = formatFiles(results[0] || []);
                         var lockedFiles = formatFiles(results[1] || []);
                         var snapshotFiles = formatFiles(results[2] || []);
-                        
+
                         self.$setState({
                             Loading: false,
                             LoopFiles: loopFiles,
@@ -237,9 +320,9 @@
                             hasLockedFiles: lockedFiles.length > 0,
                             hasSnapshotFiles: snapshotFiles.length > 0
                         });
-                    }).catch(function(err) {
+                    }).catch(function (err) {
                         console.error('Failed to load gallery files:', err);
-                        self.$setState({ 
+                        self.$setState({
                             Loading: false,
                             hasLoopFiles: false,
                             hasLockedFiles: false,
@@ -251,7 +334,7 @@
                             closeTimeout: 2000
                         });
                     });
-                }).catch(function(err) {
+                }).catch(function (err) {
                     console.error('Failed to stop recording:', err);
                     self.$setState({ Loading: false });
                     self.$app.toast.show({
@@ -261,41 +344,297 @@
                     });
                 });
             },
-            setCameraFilter: function(filter) {
+
+            setCameraFilter: function (filter) {
                 var self = this;
                 if (self.CameraFilter !== filter) {
                     self.CameraFilter = filter;
-                    self.$setState({ 
+                    self.$setState({
                         CameraFilter: filter,
                         isFrontCamera: filter === 'front',
                         isRearCamera: filter === 'rear'
                     });
+                    self.cancelSelection();
                     self.loadAllFiles();
                 }
             },
-            refreshGallery: function() {
+
+            refreshGallery: function () {
+                this.cancelSelection();
                 this.loadAllFiles();
             },
-            openFile: function(url) {
-                if (window.cordova && cordova.InAppBrowser) {
-                    cordova.InAppBrowser.open(url, '_system');
+
+            // Selection Mode Methods
+            enableSelectMode: function () {
+                var self = this;
+                self.$setState({ SelectMode: true });
+                self.$el.addClass('select-mode');
+            },
+
+            cancelSelection: function () {
+                var self = this;
+                // Reset all selections
+                self.LoopFiles.forEach(function (f) { f.selected = false; });
+                self.LockedFiles.forEach(function (f) { f.selected = false; });
+                self.SnapshotFiles.forEach(function (f) { f.selected = false; });
+
+                self.$setState({
+                    SelectMode: false,
+                    SelectedCount: 0,
+                    hasSelection: false,
+                    LoopFiles: self.LoopFiles,
+                    LockedFiles: self.LockedFiles,
+                    SnapshotFiles: self.SnapshotFiles
+                });
+                self.$el.removeClass('select-mode');
+            },
+
+            toggleSelection: function (type, index) {
+                var self = this;
+                var files;
+
+                if (type === 'loop') {
+                    files = self.LoopFiles;
+                } else if (type === 'locked') {
+                    files = self.LockedFiles;
                 } else {
-                    window.open(url, '_blank');
+                    files = self.SnapshotFiles;
+                }
+
+                files[index].selected = !files[index].selected;
+                self.updateSelectionCount();
+            },
+
+            selectAll: function () {
+                var self = this;
+                var activeTab = self.$el.find('.tab.tab-active').attr('id');
+                var files;
+
+                if (activeTab === 'tab-loop') {
+                    files = self.LoopFiles;
+                } else if (activeTab === 'tab-locked') {
+                    files = self.LockedFiles;
+                } else {
+                    files = self.SnapshotFiles;
+                }
+
+                // Check if all are selected
+                var allSelected = files.every(function (f) { return f.selected; });
+
+                // Toggle all
+                files.forEach(function (f) { f.selected = !allSelected; });
+                self.updateSelectionCount();
+            },
+
+            updateSelectionCount: function () {
+                var self = this;
+                var count = 0;
+
+                self.LoopFiles.forEach(function (f) { if (f.selected) count++; });
+                self.LockedFiles.forEach(function (f) { if (f.selected) count++; });
+                self.SnapshotFiles.forEach(function (f) { if (f.selected) count++; });
+
+                self.$setState({
+                    SelectedCount: count,
+                    hasSelection: count > 0,
+                    LoopFiles: self.LoopFiles,
+                    LockedFiles: self.LockedFiles,
+                    SnapshotFiles: self.SnapshotFiles
+                });
+            },
+
+            getSelectedFiles: function () {
+                var self = this;
+                var selected = [];
+
+                self.LoopFiles.forEach(function (f) {
+                    if (f.selected) selected.push({ type: 'loop', file: f });
+                });
+                self.LockedFiles.forEach(function (f) {
+                    if (f.selected) selected.push({ type: 'locked', file: f });
+                });
+                self.SnapshotFiles.forEach(function (f) {
+                    if (f.selected) selected.push({ type: 'snapshot', file: f });
+                });
+
+                return selected;
+            },
+
+            downloadSelected: function () {
+                var self = this;
+                var selected = self.getSelectedFiles();
+
+                if (selected.length === 0) return;
+
+                self.$app.dialog.confirm(
+                    'Download ' + selected.length + ' file(s)?',
+                    'Download',
+                    function () {
+                        self.$app.toast.show({
+                            text: 'Starting download of ' + selected.length + ' file(s)...',
+                            position: 'center',
+                            closeTimeout: 2000
+                        });
+
+                        // Download files one by one
+                        selected.forEach(function (item) {
+                            self.downloadFile(item.file.url, item.file.filename);
+                        });
+
+                        self.cancelSelection();
+                    }
+                );
+            },
+
+            deleteSelected: function () {
+                var self = this;
+                var selected = self.getSelectedFiles();
+
+                if (selected.length === 0) return;
+
+                self.$app.dialog.confirm(
+                    'Delete ' + selected.length + ' file(s)? This cannot be undone.',
+                    'Delete',
+                    function () {
+                        // TODO: Implement delete API
+                        self.$app.toast.show({
+                            text: 'Delete API not implemented yet',
+                            position: 'center',
+                            closeTimeout: 2000
+                        });
+
+                        self.cancelSelection();
+                    }
+                );
+            },
+
+            // File operations
+            downloadFile: function (url, filename) {
+                var self = this;
+
+                if (window.cordova) {
+                    // Cordova download
+                    self.cordovaDownload(url, filename);
+                } else {
+                    // Web download
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.target = '_blank';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+            },
+
+            cordovaDownload: function (url, filename) {
+                var self = this;
+
+                // Request storage permission first (Android)
+                if (window.cordova.plugins && window.cordova.plugins.permissions) {
+                    var permissions = cordova.plugins.permissions;
+                    permissions.checkPermission(permissions.WRITE_EXTERNAL_STORAGE, function (status) {
+                        if (status.hasPermission) {
+                            self.startCordovaDownload(url, filename);
+                        } else {
+                            permissions.requestPermission(permissions.WRITE_EXTERNAL_STORAGE, function (status) {
+                                if (status.hasPermission) {
+                                    self.startCordovaDownload(url, filename);
+                                } else {
+                                    self.$app.toast.show({
+                                        text: 'Storage permission denied',
+                                        position: 'center',
+                                        closeTimeout: 2000
+                                    });
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    self.startCordovaDownload(url, filename);
+                }
+            },
+
+            startCordovaDownload: function (url, filename) {
+                var self = this;
+
+                // Use cordova-plugin-file and cordova-plugin-file-transfer
+                var fileTransfer = new FileTransfer();
+                var targetPath = cordova.file.externalRootDirectory + 'Download/' + filename;
+
+                self.$app.toast.show({
+                    text: 'Downloading ' + filename + '...',
+                    position: 'center',
+                    closeTimeout: 1000
+                });
+
+                fileTransfer.download(
+                    url,
+                    targetPath,
+                    function (entry) {
+                        self.$app.toast.show({
+                            text: 'Downloaded: ' + filename,
+                            position: 'center',
+                            closeTimeout: 2000
+                        });
+                    },
+                    function (error) {
+                        console.error('Download error:', error);
+                        self.$app.toast.show({
+                            text: 'Download failed: ' + filename,
+                            position: 'center',
+                            closeTimeout: 2000
+                        });
+                    }
+                );
+            },
+
+            // Open file viewer
+            openViewer: function (url, filename, type) {
+                var self = this;
+
+                // Store camera filter for viewer
+                AppStore.state.currentCamera = self.CameraFilter;
+
+                // Navigate to viewer page
+                console.log('Navigating to viewer for', filename);
+                console.log('URL:', url);
+                console.log('Type:', type);
+                self.$app.views.main.router.navigate('/viewer/' + type + '/' + encodeURIComponent(filename) + '/');
+            },
+
+            // Handle item click
+            handleItemClick: function (el) {
+                var self = this;
+                var url = el.dataset.url;
+                var filename = el.dataset.filename;
+                var type = el.dataset.type;
+                var index = parseInt(el.dataset.index, 10);
+
+                if (self.SelectMode) {
+                    // Toggle selection
+                    self.toggleSelection(type, index);
+                } else {
+                    // Open viewer
+                    console.log('Opening viewer for', filename);
+                    self.openViewer(url, filename, type);
                 }
             }
         },
         on: {
-            pageInit: function(e, page) {
+            pageInit: function (e, page) {
                 var self = this;
                 self.loadAllFiles();
-                
+
                 // Handle gallery item click
-                page.$el.on('click', '.gallery-item', function() {
-                    var url = this.dataset.url;
-                    if (url) {
-                        self.openFile(url);
-                    }
+                page.$el.on('click', '.gallery-item', function (e) {
+                    e.preventDefault();
+                    self.handleItemClick(this);
                 });
+            },
+            pageBeforeRemove: function () {
+                var self = this;
+                self.$el.off('click', '.gallery-item');
             }
         }
     };

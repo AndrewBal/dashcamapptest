@@ -30,6 +30,14 @@ var routes = [
             transition: 'f7-cover',
         },
     },
+      {
+        path: '/viewer/',
+        componentUrl: './resources/pages/viewer.html',
+        name: 'viewer',
+        options: {
+            transition: 'f7-cover',
+        },
+    },
     {
         path: '/settings/',
         componentUrl: './resources/pages/settings.html',

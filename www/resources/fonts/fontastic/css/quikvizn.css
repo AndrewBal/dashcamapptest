@@ -1,11 +1,11 @@
 @font-face {
   font-family: 'quikvizn';
-  src: url('../font/quikvizn.eot?11828303');
-  src: url('../font/quikvizn.eot?11828303#iefix') format('embedded-opentype'),
-       url('../font/quikvizn.woff2?11828303') format('woff2'),
-       url('../font/quikvizn.woff?11828303') format('woff'),
-       url('../font/quikvizn.ttf?11828303') format('truetype'),
-       url('../font/quikvizn.svg?11828303#quikvizn') format('svg');
+  src: url('../font/quikvizn.eot?98404711');
+  src: url('../font/quikvizn.eot?98404711#iefix') format('embedded-opentype'),
+       url('../font/quikvizn.woff2?98404711') format('woff2'),
+       url('../font/quikvizn.woff?98404711') format('woff'),
+       url('../font/quikvizn.ttf?98404711') format('truetype'),
+       url('../font/quikvizn.svg?98404711#quikvizn') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -15,7 +15,7 @@
 @media screen and (-webkit-min-device-pixel-ratio:0) {
   @font-face {
     font-family: 'quikvizn';
-    src: url('../font/quikvizn.svg?11828303#quikvizn') format('svg');
+    src: url('../font/quikvizn.svg?98404711#quikvizn') format('svg');
   }
 }
 */
@@ -81,3 +81,5 @@
 .icon-update:before { content: '\e818'; } /* '' */
 .icon-wifi:before { content: '\e819'; } /* '' */
 .icon-voice:before { content: '\e81a'; } /* '' */
+.icon-download:before { content: '\e81b'; } /* '' */
+.icon-delete:before { content: '\e81c'; } /* '' */

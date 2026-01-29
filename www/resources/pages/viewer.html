@@ -1,0 +1,426 @@
+<template>
+    <div class="page viewer-page" data-name="viewer">
+        <!-- Navbar -->
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="link back">
+                        <i class="f7-icons">chevron_left</i>
+                    </a>
+                </div>
+                <div class="title">{{filename}}</div>
+                <div class="right">
+                    <a href="#" class="link icon-only" @click="shareFile">
+                        <i class="f7-icons">square_arrow_up</i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Toolbar -->
+        <div class="toolbar toolbar-bottom viewer-toolbar">
+            <div class="toolbar-inner">
+                <a href="#" class="link" @click="downloadFile">
+                    <i class="f7-icons icon-download"></i>
+                    <span class="font-bold">DOWNLOAD</span>
+                </a>
+                <a href="#" class="link color-red" @click="deleteFile">
+                   <i class="f7-icons icon-delete"></i>
+                    <span class="font-bold">DELETE</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <div class="viewer-container">
+                {{#if isPhoto}}
+                <!-- Photo Viewer -->
+                <div class="photo-viewer">
+                    <img src="{{fileUrl}}" alt="{{filename}}" @click="toggleControls">
+                </div>
+                {{else}}
+                <!-- Video Viewer -->
+                <div class="video-viewer">
+                    <video 
+                        id="videoPlayer"
+                        controls
+                        playsinline
+                        webkit-playsinline
+                        preload="metadata"
+                        poster=""
+                        @click="togglePlay"
+                    >
+                        <source src="{{fileUrl}}" type="video/mp2t">
+                        Your browser does not support the video tag.
+                    </video>
+                    
+                    <!-- Fallback if native player doesn't work -->
+                    <div class="video-fallback" style="display: none;">
+                        <i class="f7-icons">film</i>
+                        <p>{{filename}}</p>
+                        <p class="video-url">{{fileUrl}}</p>
+                        <a href="#" class="btn-cs" @click="openExternalPlayer">
+                            <i class="f7-icons">play_fill</i>
+                            Open in External Player
+                        </a>
+                    </div>
+                </div>
+                {{/if}}
+            </div>
+            
+            <!-- File Info -->
+            <div class="file-info">
+                <div class="file-info-row">
+                    <span class="label">Filename:</span>
+                    <span class="value">{{filename}}</span>
+                </div>
+                {{#if formattedDate}}
+                <div class="file-info-row">
+                    <span class="label">Date:</span>
+                    <span class="value">{{formattedDate}}</span>
+                </div>
+                {{/if}}
+                <div class="file-info-row">
+                    <span class="label">Type:</span>
+                    <span class="value">{{#if isPhoto}}Photo{{else}}Video{{/if}}</span>
+                </div>
+                <div class="file-info-row">
+                    <span class="label">Camera:</span>
+                    <span class="value">{{cameraLabel}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+ 
+
+<script>
+    return {
+        data: function() {
+            return {
+                type: '',
+                filename: '',
+                fileUrl: '',
+                isPhoto: false,
+                formattedDate: '',
+                cameraLabel: 'Front',
+                controlsVisible: true
+            };
+        },
+        methods: {
+            initViewer: function() {
+                var self = this;
+                var route = self.$f7route;
+                
+                self.type = route.params.type;
+                self.filename = decodeURIComponent(route.params.filename);
+                
+                // Determine if photo or video
+                self.isPhoto = self.type === 'snapshot' || 
+                               self.filename.toLowerCase().indexOf('.jpg') !== -1 ||
+                               self.filename.toLowerCase().indexOf('.jpeg') !== -1 ||
+                               self.filename.toLowerCase().indexOf('.png') !== -1;
+                
+                // Get camera from AppStore
+                var camera = AppStore.state.currentCamera || 'front';
+                self.cameraLabel = camera === 'front' ? 'Front' : 'Rear';
+                
+                // Determine directory
+                var dir = self.getDirectory(self.type, camera);
+                
+                // Build file URL
+                self.fileUrl = DASHCAM_API.getFileUrl ? 
+                    DASHCAM_API.getFileUrl(dir, self.filename) :
+                    DASHCAM_API.baseUrl + '/sd//' + dir + '/' + self.filename;
+                
+                // Parse date from filename
+                self.formattedDate = self.parseDateFromFilename(self.filename);
+                
+                self.$setState({
+                    type: self.type,
+                    filename: self.filename,
+                    fileUrl: self.fileUrl,
+                    isPhoto: self.isPhoto,
+                    formattedDate: self.formattedDate,
+                    cameraLabel: self.cameraLabel
+                });
+                
+                console.log('[Viewer] Initialized:', {
+                    type: self.type,
+                    filename: self.filename,
+                    fileUrl: self.fileUrl,
+                    isPhoto: self.isPhoto
+                });
+            },
+            
+            getDirectory: function(type, camera) {
+                var dirs = DASHCAM_API.directories;
+                
+                switch(type) {
+                    case 'loop':
+                        return camera === 'front' ? dirs.loopFront : dirs.loopRear;
+                    case 'locked':
+                        return camera === 'front' ? dirs.lockedFront : dirs.lockedRear;
+                    case 'snapshot':
+                        return camera === 'front' ? dirs.snapshotFront : dirs.snapshotRear;
+                    default:
+                        return dirs.loopFront;
+                }
+            },
+            
+            parseDateFromFilename: function(filename) {
+                // Format: 2026_01_24_115023_00.TS
+                var match = filename.match(/(\d{4})_(\d{2})_(\d{2})_(\d{2})(\d{2})(\d{2})/);
+                if (match) {
+                    var date = new Date(
+                        parseInt(match[1], 10),
+                        parseInt(match[2], 10) - 1,
+                        parseInt(match[3], 10),
+                        parseInt(match[4], 10),
+                        parseInt(match[5], 10),
+                        parseInt(match[6], 10)
+                    );
+                    
+                    // Format date
+                    var d = date.getDate().toString().padStart(2, '0');
+                    var m = (date.getMonth() + 1).toString().padStart(2, '0');
+                    var y = date.getFullYear();
+                    var h = date.getHours().toString().padStart(2, '0');
+                    var min = date.getMinutes().toString().padStart(2, '0');
+                    var sec = date.getSeconds().toString().padStart(2, '0');
+                    
+                    return d + '.' + m + '.' + y + ' ' + h + ':' + min + ':' + sec;
+                }
+                return '';
+            },
+            
+            toggleControls: function() {
+                var self = this;
+                self.controlsVisible = !self.controlsVisible;
+                
+                if (self.controlsVisible) {
+                    self.$el.find('.navbar, .viewer-toolbar').show();
+                } else {
+                    self.$el.find('.navbar, .viewer-toolbar').hide();
+                }
+            },
+            
+            togglePlay: function() {
+                var video = this.$el.find('video')[0];
+                if (video) {
+                    if (video.paused) {
+                        video.play();
+                    } else {
+                        video.pause();
+                    }
+                }
+            },
+            
+            openExternalPlayer: function() {
+                var self = this;
+                
+                if (window.cordova && cordova.InAppBrowser) {
+                    cordova.InAppBrowser.open(self.fileUrl, '_system');
+                } else {
+                    window.open(self.fileUrl, '_blank');
+                }
+            },
+            
+            downloadFile: function() {
+                var self = this;
+                
+                self.$app.dialog.confirm(
+                    'Download this file to your device?',
+                    'Download',
+                    function() {
+                        if (window.cordova) {
+                            self.cordovaDownload();
+                        } else {
+                            self.webDownload();
+                        }
+                    }
+                );
+            },
+            
+            webDownload: function() {
+                var self = this;
+                var a = document.createElement('a');
+                a.href = self.fileUrl;
+                a.download = self.filename;
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                self.$app.toast.show({
+                    text: 'Download started',
+                    position: 'center',
+                    closeTimeout: 2000
+                });
+            },
+            
+            cordovaDownload: function() {
+                var self = this;
+                
+                // Request storage permission first (Android)
+                if (window.cordova.plugins && window.cordova.plugins.permissions) {
+                    var permissions = cordova.plugins.permissions;
+                    permissions.checkPermission(permissions.WRITE_EXTERNAL_STORAGE, function(status) {
+                        if (status.hasPermission) {
+                            self.startCordovaDownload();
+                        } else {
+                            permissions.requestPermission(permissions.WRITE_EXTERNAL_STORAGE, function(status) {
+                                if (status.hasPermission) {
+                                    self.startCordovaDownload();
+                                } else {
+                                    self.$app.toast.show({
+                                        text: 'Storage permission denied',
+                                        position: 'center',
+                                        closeTimeout: 2000
+                                    });
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    self.startCordovaDownload();
+                }
+            },
+            
+            startCordovaDownload: function() {
+                var self = this;
+                
+                var progressDialog = self.$app.dialog.progress('Downloading...', 0);
+                
+                // Use cordova-plugin-file-transfer
+                var fileTransfer = new FileTransfer();
+                var targetPath = cordova.file.externalRootDirectory + 'Download/' + self.filename;
+                
+                fileTransfer.onprogress = function(progressEvent) {
+                    if (progressEvent.lengthComputable) {
+                        var percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                        progressDialog.setProgress(percent);
+                        progressDialog.setText('Downloading... ' + percent + '%');
+                    }
+                };
+                
+                fileTransfer.download(
+                    self.fileUrl,
+                    targetPath,
+                    function(entry) {
+                        progressDialog.close();
+                        self.$app.toast.show({
+                            text: 'Downloaded to Downloads folder',
+                            position: 'center',
+                            closeTimeout: 2000
+                        });
+                    },
+                    function(error) {
+                        progressDialog.close();
+                        console.error('Download error:', error);
+                        self.$app.toast.show({
+                            text: 'Download failed',
+                            position: 'center',
+                            closeTimeout: 2000
+                        });
+                    }
+                );
+            },
+            
+            deleteFile: function() {
+                var self = this;
+                
+                self.$app.dialog.confirm(
+                    'Delete this file? This cannot be undone.',
+                    'Delete',
+                    function() {
+                        // TODO: Implement delete API
+                        self.$app.toast.show({
+                            text: 'Delete API not implemented yet',
+                            position: 'center',
+                            closeTimeout: 2000
+                        });
+                    }
+                );
+            },
+            
+            shareFile: function() {
+                var self = this;
+                
+                if (window.plugins && window.plugins.socialsharing) {
+                    window.plugins.socialsharing.share(
+                        null,
+                        self.filename,
+                        self.fileUrl,
+                        null
+                    );
+                } else if (navigator.share) {
+                    navigator.share({
+                        title: self.filename,
+                        url: self.fileUrl
+                    }).catch(function(err) {
+                        console.log('Share error:', err);
+                    });
+                } else {
+                    // Fallback - copy URL to clipboard
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(self.fileUrl).then(function() {
+                            self.$app.toast.show({
+                                text: 'URL copied to clipboard',
+                                position: 'center',
+                                closeTimeout: 2000
+                            });
+                        });
+                    } else {
+                        self.$app.toast.show({
+                            text: 'Share not available',
+                            position: 'center',
+                            closeTimeout: 2000
+                        });
+                    }
+                }
+            },
+            
+            setupVideoErrorHandler: function() {
+                var self = this;
+                var video = self.$el.find('video')[0];
+                
+                if (video) {
+                    video.onerror = function() {
+                        console.log('[Viewer] Video error, showing fallback');
+                        self.$el.find('video').hide();
+                        self.$el.find('.video-fallback').show();
+                    };
+                    
+                    // Try to play
+                    video.load();
+                }
+            }
+        },
+        on: {
+            pageInit: function(e, page) {
+                var self = this;
+                self.initViewer();
+                
+                // Setup video error handler
+                if (!self.isPhoto) {
+                    setTimeout(function() {
+                        self.setupVideoErrorHandler();
+                    }, 100);
+                }
+            },
+            pageBeforeRemove: function() {
+                // Cleanup video
+                var video = this.$el.find('video')[0];
+                if (video) {
+                    video.pause();
+                    video.src = '';
+                    video.load();
+                }
+            }
+        }
+    };
+</script>
