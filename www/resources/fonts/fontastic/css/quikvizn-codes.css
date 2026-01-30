@@ -28,3 +28,6 @@
 .icon-voice:before { content: '\e81a'; } /* '' */
 .icon-download:before { content: '\e81b'; } /* '' */
 .icon-delete:before { content: '\e81c'; } /* '' */
+.icon-channel:before { content: '\e81d'; } /* '' */
+.icon-model:before { content: '\e81f'; } /* '' */
+.icon-password:before { content: '\e820'; } /* '' */

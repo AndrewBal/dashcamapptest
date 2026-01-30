@@ -57,9 +57,7 @@
                     </li>
                     <li>
                         <a href="#" class="item-link item-content" @click="showPicker('recSplitTime')">
-                            <div class="item-media">
-                                <i class="f7-icons color-lightgray size-21">timer</i>
-                            </div>
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-time"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Video Length</div>
                                 <div class="item-after">{{recSplitTimeDisplay}}</div>
@@ -105,7 +103,7 @@
                     </li>
                     <li>
                         <a href="#" class="item-link item-content" @click="showPicker('volume')">
-                            <div class="item-media"><i class="f7-icons color-lightgray size-21">speaker_2</i></div>
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-voice"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Volume</div>
                                 <div class="item-after">{{volumeDisplay}}</div>
@@ -121,7 +119,7 @@
                 <ul>
                     <li>
                         <div class="item-content">
-                            <div class="item-media"><i class="f7-icons color-lightgray size-21">wifi</i></div>
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-wifi"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Network Name</div>
                                 <div class="item-after">{{wifiSSID}}</div>
@@ -130,7 +128,8 @@
                     </li>
                     <li>
                         <div class="item-content">
-                            <div class="item-media"><i class="f7-icons color-lightgray size-21">antenna_radiowaves_left_right</i></div>
+                            <div class="item-media">
+                                <i class="f7-icons color-lightgray size-21 icon-channel"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Channel</div>
                                 <div class="item-after">{{wifiChannel}}</div>
@@ -139,7 +138,7 @@
                     </li>
                     <li>
                         <a href="#" class="item-link item-content" @click="changeWifiPassword">
-                            <div class="item-media"><i class="f7-icons color-lightgray size-21">lock</i></div>
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-password"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Change Password</div>
                             </div>
@@ -152,7 +151,7 @@
             <div class="block-title">Storage</div>
             <div class="list">
                 <ul>
-                    <li>
+                    <!-- <li>
                         <div class="item-content">
                             <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-card"></i></div>
                             <div class="item-inner">
@@ -160,10 +159,10 @@
                                 <div class="item-after">{{sdInfo}}</div>
                             </div>
                         </div>
-                    </li>
+                    </li> -->
                     <li>
                         <a href="#" class="item-link item-content" @click="formatCard">
-                            <div class="item-media"><i class="f7-icons color-lightgray size-21">trash</i></div>
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-card"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Format SD Card</div>
                             </div>
@@ -193,6 +192,7 @@
                 <ul>
                     <li>
                         <div class="item-content">
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-model"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Model</div>
                                 <div class="item-after">{{deviceModel}}</div>
@@ -201,6 +201,7 @@
                     </li>
                     <li>
                         <div class="item-content">
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-model"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Firmware</div>
                                 <div class="item-after">{{deviceFirmware}}</div>
