@@ -218,6 +218,7 @@
     gap: 15px;
     padding: 20px;
     justify-content: center;
+    align-items: center;
 }
 
 .action-btn {
@@ -801,6 +802,10 @@
         word-break: break-all;
     }
 
+
+    .md .toggle input[type="checkbox"]:checked + .toggle-icon {
+        background: #5fb257;
+    }
 /* ============================================
    Safe Areas
    ============================================ */

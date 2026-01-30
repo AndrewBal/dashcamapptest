@@ -41,31 +41,24 @@
                     <img src="{{fileUrl}}" alt="{{filename}}" @click="toggleControls">
                 </div>
                 {{else}}
-                <!-- Video Viewer -->
+                <!-- Video Viewer - показываем превью и кнопку Play -->
                 <div class="video-viewer">
-                    <video 
-                        id="videoPlayer"
-                        controls
-                        playsinline
-                        webkit-playsinline
-                        preload="metadata"
-                        poster=""
-                        @click="togglePlay"
-                    >
-                        <source src="{{fileUrl}}" type="video/mp2t">
-                        Your browser does not support the video tag.
-                    </video>
-                    
-                    <!-- Fallback if native player doesn't work -->
-                    <div class="video-fallback" style="display: none;">
-                        <i class="f7-icons">film</i>
-                        <p>{{filename}}</p>
-                        <p class="video-url">{{fileUrl}}</p>
-                        <a href="#" class="btn-cs" @click="openExternalPlayer">
+                    <div class="video-preview">
+                        <!-- Thumbnail or placeholder -->
+                        <div class="video-thumbnail">
+                            <img src="{{thumbnailUrl}}" onerror="this.style.display='none'" alt="">
+                            <div class="video-placeholder">
+                                <i class="f7-icons">film</i>
+                            </div>
+                        </div>
+                        
+                        <!-- Play button overlay -->
+                        <a href="#" class="play-button" @click="playVideo">
                             <i class="f7-icons">play_fill</i>
-                            Open in External Player
                         </a>
                     </div>
+                    
+                    <p class="video-hint">Tap to play in video player</p>
                 </div>
                 {{/if}}
             </div>
@@ -95,7 +88,184 @@
     </div>
 </template>
 
- 
+<style>
+    .viewer-page {
+        --f7-page-bg-color: #000;
+        background: #000;
+    }
+    
+    .viewer-page .navbar {
+        --f7-navbar-bg-color: rgba(0,0,0,0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .viewer-page .page-content {
+        background: #000;
+        padding-bottom: 80px;
+    }
+    
+    /* Viewer Container */
+    .viewer-page .viewer-container {
+        width: 100%;
+        min-height: 50vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #000;
+    }
+    
+    /* Photo Viewer */
+    .viewer-page .photo-viewer {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .viewer-page .photo-viewer img {
+        max-width: 100%;
+        max-height: 70vh;
+        object-fit: contain;
+    }
+    
+    /* Video Viewer */
+    .viewer-page .video-viewer {
+        width: 100%;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .viewer-page .video-preview {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+        aspect-ratio: 16/9;
+        background: #1a1a1a;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .viewer-page .video-thumbnail {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+    
+    .viewer-page .video-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .viewer-page .video-placeholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .viewer-page .video-placeholder i {
+        font-size: 64px;
+        color: rgba(255,255,255,0.3);
+    }
+    
+    .viewer-page .play-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80px;
+        height: 80px;
+        background: rgba(255,255,255,0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        transition: transform 0.2s, background 0.2s;
+    }
+    
+    .viewer-page .play-button:active {
+        transform: translate(-50%, -50%) scale(0.95);
+        background: rgba(255,255,255,1);
+    }
+    
+    .viewer-page .play-button i {
+        font-size: 36px;
+        color: #333;
+        margin-left: 4px;  
+    }
+    
+    .viewer-page .video-hint {
+        color: rgba(255,255,255,0.5);
+        font-size: 13px;
+        margin-top: 15px;
+    }
+    
+     .viewer-page .viewer-toolbar {
+        background: rgba(0,0,0,0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .viewer-page .viewer-toolbar .toolbar-inner {
+        justify-content: space-around;
+    }
+    
+    .viewer-page .viewer-toolbar .link {
+        display: flex;
+         align-items: center;
+        gap: 4px;
+        padding: 10px 30px;
+        color: #fff;
+        font-size: 12px;
+    }
+    
+    .viewer-page .viewer-toolbar .link i {
+        font-size: 24px;
+    }
+    
+    .viewer-page .viewer-toolbar .link.color-red {
+        color: #ff3b30;
+    }
+    
+    /* File Info */
+    .viewer-page .file-info {
+        padding: 20px;
+        background: rgba(255,255,255,0.05);
+        margin: 20px 15px;
+        border-radius: 12px;
+    }
+    
+    .viewer-page .file-info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        color: white;
+        font-size: 14px;
+    }
+    
+    .viewer-page .file-info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .viewer-page .file-info-row .label {
+        color: rgba(255,255,255,0.5);
+    }
+    
+    .viewer-page .file-info-row .value {
+        text-align: right;
+        max-width: 60%;
+        word-break: break-all;
+    }
+</style>
 
 <script>
     return {
@@ -104,6 +274,7 @@
                 type: '',
                 filename: '',
                 fileUrl: '',
+                thumbnailUrl: '',
                 isPhoto: false,
                 formattedDate: '',
                 cameraLabel: 'Front',
@@ -136,6 +307,11 @@
                     DASHCAM_API.getFileUrl(dir, self.filename) :
                     DASHCAM_API.baseUrl + '/sd//' + dir + '/' + self.filename;
                 
+                // Build thumbnail URL for videos (.TS -> .THM)
+                if (!self.isPhoto) {
+                    self.thumbnailUrl = self.fileUrl.replace(/\.(TS|ts)$/i, '.THM');
+                }
+                
                 // Parse date from filename
                 self.formattedDate = self.parseDateFromFilename(self.filename);
                 
@@ -143,6 +319,7 @@
                     type: self.type,
                     filename: self.filename,
                     fileUrl: self.fileUrl,
+                    thumbnailUrl: self.thumbnailUrl,
                     isPhoto: self.isPhoto,
                     formattedDate: self.formattedDate,
                     cameraLabel: self.cameraLabel
@@ -208,19 +385,36 @@
                 }
             },
             
-            togglePlay: function() {
-                var video = this.$el.find('video')[0];
-                if (video) {
-                    if (video.paused) {
-                        video.play();
-                    } else {
-                        video.pause();
-                    }
+            // Play video using ExoPlayer plugin or system player
+            playVideo: function() {
+                var self = this;
+                
+                console.log('[Viewer] Playing video:', self.fileUrl);
+                
+                // Try ExoPlayer plugin first (same as RTSP player)
+                if (window.RtspPlayer) {
+                    console.log('[Viewer] Using RtspPlayer/ExoPlayer');
+                    window.RtspPlayer.play(self.fileUrl,
+                        function(status) {
+                            console.log('[Viewer] Player status:', status);
+                        },
+                        function(error) {
+                            console.error('[Viewer] ExoPlayer error:', error);
+                            // Fallback to system player
+                            self.openSystemPlayer();
+                        }
+                    );
+                } else {
+                    // Fallback to system player
+                    self.openSystemPlayer();
                 }
             },
             
-            openExternalPlayer: function() {
+            // Open in system video player
+            openSystemPlayer: function() {
                 var self = this;
+                
+                console.log('[Viewer] Opening in system player:', self.fileUrl);
                 
                 if (window.cordova && cordova.InAppBrowser) {
                     cordova.InAppBrowser.open(self.fileUrl, '_system');
@@ -262,72 +456,118 @@
                 });
             },
             
+            // FIXED: Download without FileTransfer plugin
             cordovaDownload: function() {
                 var self = this;
-                
-                // Request storage permission first (Android)
-                if (window.cordova.plugins && window.cordova.plugins.permissions) {
-                    var permissions = cordova.plugins.permissions;
-                    permissions.checkPermission(permissions.WRITE_EXTERNAL_STORAGE, function(status) {
-                        if (status.hasPermission) {
-                            self.startCordovaDownload();
-                        } else {
-                            permissions.requestPermission(permissions.WRITE_EXTERNAL_STORAGE, function(status) {
-                                if (status.hasPermission) {
-                                    self.startCordovaDownload();
-                                } else {
-                                    self.$app.toast.show({
-                                        text: 'Storage permission denied',
-                                        position: 'center',
-                                        closeTimeout: 2000
-                                    });
-                                }
-                            });
-                        }
+
+                // Check if cordova-plugin-file is available
+                if (typeof cordova === 'undefined' || !cordova.file) {
+                    self.$app.toast.show({
+                        text: 'File plugin not available, opening in browser...',
+                        position: 'center',
+                        closeTimeout: 2000
                     });
-                } else {
-                    self.startCordovaDownload();
+                    // Fallback - open in system browser/app
+                    if (cordova && cordova.InAppBrowser) {
+                        cordova.InAppBrowser.open(self.fileUrl, '_system');
+                    } else {
+                        window.open(self.fileUrl, '_blank');
+                    }
+                    return;
                 }
-            },
-            
-            startCordovaDownload: function() {
-                var self = this;
-                
-                var progressDialog = self.$app.dialog.progress('Downloading...', 0);
-                
-                // Use cordova-plugin-file-transfer
-                var fileTransfer = new FileTransfer();
-                var targetPath = cordova.file.externalRootDirectory + 'Download/' + self.filename;
-                
-                fileTransfer.onprogress = function(progressEvent) {
-                    if (progressEvent.lengthComputable) {
-                        var percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-                        progressDialog.setProgress(percent);
-                        progressDialog.setText('Downloading... ' + percent + '%');
+
+                self.$app.toast.show({
+                    text: 'Downloading ' + self.filename + '...',
+                    position: 'center',
+                    closeTimeout: 1500
+                });
+
+                // Use XMLHttpRequest + Blob + cordova-plugin-file
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', self.fileUrl, true);
+                xhr.responseType = 'blob';
+
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        var blob = xhr.response;
+                        self.saveBlobToFile(blob, self.filename);
+                    } else {
+                        self.$app.toast.show({
+                            text: 'Download failed: ' + xhr.status,
+                            position: 'center',
+                            closeTimeout: 2000
+                        });
                     }
                 };
-                
-                fileTransfer.download(
-                    self.fileUrl,
-                    targetPath,
-                    function(entry) {
-                        progressDialog.close();
+
+                xhr.onerror = function () {
+                    console.error('Download XHR error');
+                    self.$app.toast.show({
+                        text: 'Download failed',
+                        position: 'center',
+                        closeTimeout: 2000
+                    });
+                };
+
+                xhr.send();
+            },
+
+            saveBlobToFile: function (blob, filename) {
+                var self = this;
+
+                // Determine storage location
+                var storageLocation = '';
+
+                if (cordova.file.externalRootDirectory) {
+                    // Android - save to Download folder
+                    storageLocation = cordova.file.externalRootDirectory + 'Download/';
+                } else if (cordova.file.documentsDirectory) {
+                    // iOS - save to Documents
+                    storageLocation = cordova.file.documentsDirectory;
+                } else {
+                    // Fallback to app data directory
+                    storageLocation = cordova.file.dataDirectory;
+                }
+
+                window.resolveLocalFileSystemURL(storageLocation, function (dirEntry) {
+                    dirEntry.getFile(filename, { create: true, exclusive: false }, function (fileEntry) {
+                        fileEntry.createWriter(function (fileWriter) {
+                            fileWriter.onwriteend = function () {
+                                console.log('File saved: ' + fileEntry.nativeURL);
+                                self.$app.toast.show({
+                                    text: 'Downloaded to Downloads folder',
+                                    position: 'center',
+                                    closeTimeout: 2000
+                                });
+                            };
+
+                            fileWriter.onerror = function (e) {
+                                console.error('Write error:', e);
+                                self.$app.toast.show({
+                                    text: 'Save failed',
+                                    position: 'center',
+                                    closeTimeout: 2000
+                                });
+                            };
+
+                            fileWriter.write(blob);
+                        });
+                    }, function (error) {
+                        console.error('getFile error:', error);
                         self.$app.toast.show({
-                            text: 'Downloaded to Downloads folder',
+                            text: 'Cannot create file',
                             position: 'center',
                             closeTimeout: 2000
                         });
-                    },
-                    function(error) {
-                        progressDialog.close();
-                        console.error('Download error:', error);
-                        self.$app.toast.show({
-                            text: 'Download failed',
-                            position: 'center',
-                            closeTimeout: 2000
-                        });
-                    }
-                );
+                    });
+                }, function (error) {
+                    console.error('resolveLocalFileSystemURL error:', error);
+                    self.$app.toast.show({
+                        text: 'Cannot access storage',
+                        position: 'center',
+                        closeTimeout: 2000
+                    });
+                });
             },
             
             deleteFile: function() {
@@ -382,44 +622,15 @@
                         });
                     }
                 }
-            },
-            
-            setupVideoErrorHandler: function() {
-                var self = this;
-                var video = self.$el.find('video')[0];
-                
-                if (video) {
-                    video.onerror = function() {
-                        console.log('[Viewer] Video error, showing fallback');
-                        self.$el.find('video').hide();
-                        self.$el.find('.video-fallback').show();
-                    };
-                    
-                    // Try to play
-                    video.load();
-                }
             }
         },
         on: {
             pageInit: function(e, page) {
                 var self = this;
                 self.initViewer();
-                
-                // Setup video error handler
-                if (!self.isPhoto) {
-                    setTimeout(function() {
-                        self.setupVideoErrorHandler();
-                    }, 100);
-                }
             },
             pageBeforeRemove: function() {
-                // Cleanup video
-                var video = this.$el.find('video')[0];
-                if (video) {
-                    video.pause();
-                    video.src = '';
-                    video.load();
-                }
+                // Nothing to cleanup
             }
         }
     };

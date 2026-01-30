@@ -275,12 +275,12 @@ SnapshotFiles: [
                 var self = this;
 
 
-                //if (!AppStore.state.isConnected) {
-                //    self.$app.dialog.alert('Please connect to camera first', 'Not Connected', function () {
-                //        mainView.router.back();
-                //    });
-                //    return;
-                //}  
+                 if (!AppStore.state.isConnected) {
+                    self.$app.dialog.alert('Please connect to camera first', 'Not Connected', function () {
+                        mainView.router.back();
+                    });
+                    return;
+                }  
 
 
 
@@ -509,7 +509,7 @@ SnapshotFiles: [
             },
 
             // File operations
-            downloadFile: function (url, filename) {
+          downloadFile: function (url, filename) {
                 var self = this;
 
                 if (window.cordova) {
@@ -528,32 +528,114 @@ SnapshotFiles: [
             },
 
             cordovaDownload: function (url, filename) {
-                var self = this;
+    var self = this;
 
-                // Request storage permission first (Android)
-                if (window.cordova.plugins && window.cordova.plugins.permissions) {
-                    var permissions = cordova.plugins.permissions;
-                    permissions.checkPermission(permissions.WRITE_EXTERNAL_STORAGE, function (status) {
-                        if (status.hasPermission) {
-                            self.startCordovaDownload(url, filename);
-                        } else {
-                            permissions.requestPermission(permissions.WRITE_EXTERNAL_STORAGE, function (status) {
-                                if (status.hasPermission) {
-                                    self.startCordovaDownload(url, filename);
-                                } else {
-                                    self.$app.toast.show({
-                                        text: 'Storage permission denied',
-                                        position: 'center',
-                                        closeTimeout: 2000
-                                    });
-                                }
-                            });
-                        }
+    // Для Android 10+ используем другой подход
+    // Проверяем наличие cordova-plugin-file
+    if (typeof cordova === 'undefined' || !cordova.file) {
+        self.$app.toast.show({
+            text: 'File plugin not available',
+            position: 'center',
+            closeTimeout: 2000
+        });
+        // Fallback to web download
+        window.open(url, '_system');
+        return;
+    }
+
+    self.$app.toast.show({
+        text: 'Downloading ' + filename + '...',
+        position: 'center',
+        closeTimeout: 1000
+    });
+
+    // Используем XMLHttpRequest + Blob + cordova-plugin-file
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'blob';
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            var blob = xhr.response;
+            self.saveBlobToFile(blob, filename);
+        } else {
+            self.$app.toast.show({
+                text: 'Download failed: ' + xhr.status,
+                position: 'center',
+                closeTimeout: 2000
+            });
+        }
+    };
+
+    xhr.onerror = function () {
+        console.error('Download XHR error');
+        self.$app.toast.show({
+            text: 'Download failed',
+            position: 'center',
+            closeTimeout: 2000
+        });
+    };
+
+    xhr.send();
+},
+
+saveBlobToFile: function (blob, filename) {
+    var self = this;
+
+    // Определяем директорию для сохранения
+    var storageLocation = '';
+
+    if (cordova.file.externalRootDirectory) {
+        // Android - сохраняем в Download
+        storageLocation = cordova.file.externalRootDirectory + 'Download/';
+    } else if (cordova.file.documentsDirectory) {
+        // iOS - сохраняем в Documents
+        storageLocation = cordova.file.documentsDirectory;
+    } else {
+        // Fallback
+        storageLocation = cordova.file.dataDirectory;
+    }
+
+    window.resolveLocalFileSystemURL(storageLocation, function (dirEntry) {
+        dirEntry.getFile(filename, { create: true, exclusive: false }, function (fileEntry) {
+            fileEntry.createWriter(function (fileWriter) {
+                fileWriter.onwriteend = function () {
+                    console.log('File saved: ' + fileEntry.nativeURL);
+                    self.$app.toast.show({
+                        text: 'Downloaded: ' + filename,
+                        position: 'center',
+                        closeTimeout: 2000
                     });
-                } else {
-                    self.startCordovaDownload(url, filename);
-                }
-            },
+                };
+
+                fileWriter.onerror = function (e) {
+                    console.error('Write error:', e);
+                    self.$app.toast.show({
+                        text: 'Save failed',
+                        position: 'center',
+                        closeTimeout: 2000
+                    });
+                };
+
+                fileWriter.write(blob);
+            });
+        }, function (error) {
+            console.error('getFile error:', error);
+            self.$app.toast.show({
+                text: 'Cannot create file',
+                position: 'center',
+                closeTimeout: 2000
+            });
+        });
+    }, function (error) {
+        console.error('resolveLocalFileSystemURL error:', error);
+        self.$app.toast.show({
+            text: 'Cannot access storage',
+            position: 'center',
+            closeTimeout: 2000
+        });
+    });
+},
 
             startCordovaDownload: function (url, filename) {
                 var self = this;

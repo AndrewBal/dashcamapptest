@@ -30,8 +30,8 @@ var routes = [
             transition: 'f7-cover',
         },
     },
-      {
-        path: '/viewer/',
+    {
+        path: '/viewer/:type/:filename/',
         componentUrl: './resources/pages/viewer.html',
         name: 'viewer',
         options: {

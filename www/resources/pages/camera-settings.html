@@ -21,7 +21,9 @@
                 <ul>
                     <li>
                         <div class="item-content">
-                            <div class="item-media"><i class="f7-icons color-theme">mic_fill</i></div>
+                            <div class="item-media">
+                                <i class="f7-icons icon-sound color-lightgray size-21"></i>
+                            </div>
                             <div class="item-inner">
                                 <div class="item-title">Sound Recording</div>
                                 <div class="item-after">
@@ -35,7 +37,9 @@
                     </li>
                     <li>
                         <a href="#" class="item-link item-content" @click="showPicker('resolution')">
-                            <div class="item-media"><i class="f7-icons color-theme">rectangle_on_rectangle</i></div>
+                            <div class="item-media">
+                                <i class="f7-icons color-lightgray icon-resolution size-21"></i>
+                            </div>
                             <div class="item-inner">
                                 <div class="item-title">Resolution</div>
                                 <div class="item-after">{{Resolution}}</div>
@@ -51,7 +55,7 @@
                 <ul>
                     <li>
                         <a href="#" class="item-link item-content" @click="showPicker('sensitivity')">
-                            <div class="item-media"><i class="f7-icons color-theme">bolt_fill</i></div>
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-sensitivity"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Collision Sensitivity</div>
                                 <div class="item-after">{{Sensitivity}}</div>
@@ -67,7 +71,7 @@
                 <ul>
                     <li>
                         <div class="item-content">
-                            <div class="item-media"><i class="f7-icons color-theme">speaker_2_fill</i></div>
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-voice"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Voice Prompt</div>
                                 <div class="item-after">
@@ -88,7 +92,7 @@
                 <ul>
                     <li>
                         <a href="#" class="item-link item-content" @click="formatCard">
-                            <div class="item-media"><i class="f7-icons color-theme">sdcard</i></div>
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-card"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Format TF Card</div>
                             </div>
@@ -103,7 +107,7 @@
                 <ul>
                     <li>
                         <a href="#" class="item-link item-content" @click="syncTime">
-                            <div class="item-media"><i class="f7-icons color-theme">clock_fill</i></div>
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-time"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Sync Time</div>
                             </div>
@@ -111,7 +115,7 @@
                     </li>
                     <li>
                         <a href="#" class="item-link item-content" @click="showPicker('language')">
-                            <div class="item-media"><i class="f7-icons color-theme">globe</i></div>
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-language"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Language</div>
                                 <div class="item-after">{{Language}}</div>
@@ -126,7 +130,7 @@
 
 <script>
     return {
-        data: function() {
+        data: function () {
             return {
                 Resolution: '1080P',
                 Sensitivity: 'Medium',
@@ -134,11 +138,11 @@
             };
         },
         methods: {
-            showPicker: function(type) {
+            showPicker: function (type) {
                 var self = this;
                 var options = [];
                 var current = '';
-                
+
                 if (type === 'resolution') {
                     options = ['720P', '1080P'];
                     current = self.Resolution;
@@ -149,16 +153,16 @@
                     options = ['English', 'Chinese'];
                     current = self.Language;
                 }
-                
-                var buttons = options.map(function(opt) {
+
+                var buttons = options.map(function (opt) {
                     return {
                         text: opt,
                         bold: opt === current,
-                        onClick: function() {
+                        onClick: function () {
                             if (type === 'resolution') self.$setState({ Resolution: opt });
                             else if (type === 'sensitivity') self.$setState({ Sensitivity: opt });
                             else if (type === 'language') self.$setState({ Language: opt });
-                            
+
                             self.$app.toast.show({
                                 text: 'Setting updated',
                                 position: 'center',
@@ -167,18 +171,18 @@
                         }
                     };
                 });
-                
+
                 buttons.push({ text: 'Cancel', color: 'red' });
-                
+
                 self.$app.dialog.create({
                     title: type.charAt(0).toUpperCase() + type.slice(1),
                     buttons: buttons,
                     verticalButtons: true
                 }).open();
             },
-            formatCard: function() {
+            formatCard: function () {
                 var self = this;
-                self.$app.dialog.confirm('Format TF card? All data will be erased.', 'Warning', function() {
+                self.$app.dialog.confirm('Format TF card? All data will be erased.', 'Warning', function () {
                     self.$app.toast.show({
                         text: 'Format command sent',
                         position: 'center',
@@ -186,7 +190,7 @@
                     });
                 });
             },
-            syncTime: function() {
+            syncTime: function () {
                 this.$app.toast.show({
                     text: 'Time synced to device',
                     position: 'center',
