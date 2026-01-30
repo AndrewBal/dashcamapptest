@@ -377,6 +377,395 @@ window.DASHCAM_API = {
                 snapshotRear: counts[5]
             };
         });
+    },
+
+    /**
+     * Delete file from camera SD card
+     * Endpoint: /cgi-bin/hisnet/deletefile.cgi?-name=sd//emr/2026_01_20_164720_01.TS
+     * 
+     * @param {string} path - Full path to file (e.g., "sd//norm/2026_01_24_115023_00.TS")
+     * @returns {Promise<boolean>} - true if deleted successfully
+     */
+    deleteFile: function(path) {
+        var self = this;
+        return new Promise(function(resolve, reject) {
+            // Build delete URL
+            var url = self.baseUrl + '/cgi-bin/hisnet/deletefile.cgi?-name=' + path;
+            
+            console.log('[DashCam API] Delete file: ' + url);
+            
+            var xhr = new XMLHttpRequest();
+            xhr.timeout = 10000;
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    console.log('[DashCam API] Delete response status: ' + xhr.status);
+                    console.log('[DashCam API] Delete response text: ' + xhr.responseText);
+                    
+                    if (xhr.status === 200) {
+                        // Consider 200 status as success
+                        resolve(true);
+                    } else {
+                        reject('Delete failed with status: ' + xhr.status);
+                    }
+                }
+            };
+            
+            xhr.onerror = function(e) {
+                console.error('[DashCam API] Delete error:', e);
+                reject('Delete request failed');
+            };
+            
+            xhr.ontimeout = function() {
+                console.error('[DashCam API] Delete timeout');
+                reject('Delete request timeout');
+            };
+            
+            try {
+                xhr.open('GET', url, true);
+                xhr.send();
+            } catch (e) {
+                console.error('[DashCam API] Delete exception:', e);
+                reject('Delete exception: ' + e.message);
+            }
+        });
+    },
+
+    /**
+     * Delete multiple files from camera SD card
+     * @param {Array} files - Array of file objects with 'path' property
+     * @param {Function} onProgress - Optional callback (current, total, filename)
+     * @returns {Promise<{success: number, failed: number, errors: Array}>}
+     */
+    deleteFiles: function(files, onProgress) {
+        var self = this;
+        var results = {
+            success: 0,
+            failed: 0,
+            errors: []
+        };
+        
+        // Delete files sequentially to avoid overwhelming the camera
+        return files.reduce(function(promise, file, index) {
+            return promise.then(function() {
+                // Progress callback
+                if (onProgress) {
+                    onProgress(index + 1, files.length, file.filename);
+                }
+                
+                return self.deleteFile(file.path)
+                    .then(function() {
+                        results.success++;
+                        console.log('[DashCam API] Deleted: ' + file.filename);
+                    })
+                    .catch(function(error) {
+                        results.failed++;
+                        results.errors.push({
+                            filename: file.filename,
+                            error: error
+                        });
+                        console.error('[DashCam API] Failed to delete: ' + file.filename, error);
+                    });
+            });
+        }, Promise.resolve()).then(function() {
+            return results;
+        });
+    },
+
+    /**
+     * Get file URL for a specific directory and filename
+     * @param {string} dir - Directory name (e.g., 'norm', 'emr', 'photo')
+     * @param {string} filename - Filename
+     * @returns {string} - Full URL to file
+     */
+    getFileUrl: function(dir, filename) {
+        return this.baseUrl + '/sd//' + dir + '/' + filename;
+    },
+
+    /**
+     * Build file path for delete operation
+     * @param {string} dir - Directory name
+     * @param {string} filename - Filename
+     * @returns {string} - Path for delete endpoint
+     */
+    buildFilePath: function(dir, filename) {
+        return 'sd//' + dir + '/' + filename;
+    },
+
+    // ==========================================
+    // SETTINGS API
+    // ==========================================
+
+    /**
+     * Parse camera response format
+     * Input: var model="HI3516CV610"; var softversion="1.0.4";
+     * Output: { model: "HI3516CV610", softversion: "1.0.4" }
+     */
+    parseResponse: function(text) {
+        var result = {};
+        var regex = /var\s+(\w+)\s*=\s*"([^"]*)"/g;
+        var match;
+        while ((match = regex.exec(text)) !== null) {
+            result[match[1]] = match[2];
+        }
+        return result;
+    },
+
+    /**
+     * Parse capability response
+     * Input: var capability="OFF,LOW,MIDDLE,HIGH";
+     * Output: ['OFF', 'LOW', 'MIDDLE', 'HIGH']
+     */
+    parseCapability: function(text) {
+        var match = text.match(/capability="([^"]*)"/);
+        if (match && match[1]) {
+            return match[1].split(',');
+        }
+        return [];
+    },
+
+    /**
+     * Make API request with promise
+     */
+    request: function(endpoint, timeout) {
+        var self = this;
+        timeout = timeout || 5000;
+        
+        return new Promise(function(resolve, reject) {
+            var url = self.baseUrl + '/cgi-bin/hisnet/' + endpoint;
+            console.log('[DashCam API] Request: ' + url);
+            
+            var xhr = new XMLHttpRequest();
+            xhr.timeout = timeout;
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    console.log('[DashCam API] Response: ' + xhr.responseText);
+                    if (xhr.status === 200) {
+                        resolve(xhr.responseText);
+                    } else {
+                        reject('Request failed: ' + xhr.status);
+                    }
+                }
+            };
+            
+            xhr.onerror = function() { reject('Network error'); };
+            xhr.ontimeout = function() { reject('Request timeout'); };
+            
+            try {
+                xhr.open('GET', url, true);
+                xhr.send();
+            } catch (e) {
+                reject('Exception: ' + e.message);
+            }
+        });
+    },
+
+    /**
+     * Get work state
+     * Returns: { workmode: "NORM_REC", running: "true", emrrecord: "false" }
+     */
+    getWorkState: function() {
+        var self = this;
+        return this.request('getworkstate.cgi').then(function(text) {
+            return self.parseResponse(text);
+        });
+    },
+
+    /**
+     * Set work mode
+     * @param {string} mode - 'NORM_REC' or 'ENTER_SET'
+     */
+    setWorkMode: function(mode) {
+        return this.request('setworkmode.cgi?&-workmode=' + mode);
+    },
+
+    /**
+     * Enter settings mode (stops recording)
+     */
+    enterSettingsMode: function() {
+        var self = this;
+        return this.stopRecording().then(function() {
+            return self.setWorkMode('ENTER_SET');
+        });
+    },
+
+    /**
+     * Exit settings mode (resume normal recording)
+     */
+    exitSettingsMode: function() {
+        var self = this;
+        return this.setWorkMode('NORM_REC').then(function() {
+            return self.startRecording();
+        });
+    },
+
+    /**
+     * Get device attributes
+     * Returns: { model, softversion, boardversion, product, sp, soc, photo }
+     */
+    getDeviceInfo: function() {
+        var self = this;
+        return this.request('getdeviceattr.cgi').then(function(text) {
+            return self.parseResponse(text);
+        });
+    },
+
+    /**
+     * Get SD card status
+     * Returns: { sdstatus, sdfreespace, sdtotalspace, partitionnum }
+     */
+    getSDStatus: function() {
+        var self = this;
+        return this.request('getsdstatus.cgi').then(function(text) {
+            return self.parseResponse(text);
+        });
+    },
+
+    /**
+     * Get WiFi info
+     * Returns: { enablewifi, wifissid, wifichannel, links }
+     */
+    getWifiInfo: function() {
+        var self = this;
+        return this.request('getwifi.cgi').then(function(text) {
+            return self.parseResponse(text);
+        });
+    },
+
+    /**
+     * Set system time
+     * @param {Date} date - Date object (default: current time)
+     */
+    syncTime: function(date) {
+        date = date || new Date();
+        var timeStr = 
+            date.getFullYear().toString() +
+            ('0' + (date.getMonth() + 1)).slice(-2) +
+            ('0' + date.getDate()).slice(-2) +
+            ('0' + date.getHours()).slice(-2) +
+            ('0' + date.getMinutes()).slice(-2) +
+            ('0' + date.getSeconds()).slice(-2);
+        
+        return this.request('setsystime.cgi?&-time=' + timeStr);
+    },
+
+    /**
+     * Format SD card
+     * WARNING: Deletes all data!
+     */
+    formatSDCard: function() {
+        return this.request('sdcommand.cgi?&-format', 30000);
+    },
+
+    /**
+     * Set WiFi password
+     * @param {string} password - New password (minimum 8 characters)
+     * Note: After changing password, need to reconnect to camera WiFi
+     */
+    setWifiPassword: function(password) {
+        if (!password || password.length < 8) {
+            return Promise.reject('Password must be at least 8 characters');
+        }
+        return this.request('setwifi.cgi?&-wifikey=' + encodeURIComponent(password));
+    },
+
+    /**
+     * Get common parameter
+     * @param {string} type - AUDIO, VOLUME, GSR_SENSITIVITY, SPEECH, etc.
+     */
+    getCommonParam: function(type) {
+        var self = this;
+        return this.request('getcommparam.cgi?&-type=' + type).then(function(text) {
+            var parsed = self.parseResponse(text);
+            return parsed.value || parsed[type.toLowerCase()] || null;
+        });
+    },
+
+    /**
+     * Set common parameter
+     * @param {string} type - Parameter type
+     * @param {string} value - Parameter value
+     */
+    setCommonParam: function(type, value) {
+        return this.request('setcommparam.cgi?&-type=' + type + '&-value=' + value);
+    },
+
+    /**
+     * Get common parameter capability (available options)
+     * @param {string} type - Parameter type
+     */
+    getCommonParamCapability: function(type) {
+        var self = this;
+        return this.request('getcommparamcapability.cgi?&-type=' + type).then(function(text) {
+            return self.parseCapability(text);
+        }).catch(function() {
+            return [];
+        });
+    },
+
+    /**
+     * Get camera parameter
+     * @param {string} type - Rec_Split_Time, MEDIAMODE, WDR, etc.
+     * @param {string} workmode - Work mode (default: NORM_REC)
+     */
+    getCameraParam: function(type, workmode) {
+        var self = this;
+        workmode = workmode || 'NORM_REC';
+        return this.request('getcamparam.cgi?&-workmode=' + workmode + '&-type=' + type).then(function(text) {
+            var parsed = self.parseResponse(text);
+            return parsed.value || null;
+        });
+    },
+
+    /**
+     * Set camera parameter
+     * @param {string} type - Parameter type
+     * @param {string} value - Parameter value
+     * @param {string} workmode - Work mode (default: NORM_REC)
+     */
+    setCameraParam: function(type, value, workmode) {
+        workmode = workmode || 'NORM_REC';
+        return this.request('setcamparam.cgi?&-workmode=' + workmode + '&-type=' + type + '&-value=' + value);
+    },
+
+    /**
+     * Get camera parameter capability
+     * @param {string} type - Parameter type
+     * @param {string} workmode - Work mode (default: NORM_REC)
+     */
+    getCameraParamCapability: function(type, workmode) {
+        var self = this;
+        workmode = workmode || 'NORM_REC';
+        return this.request('getcamparamcapability.cgi?&-workmode=' + workmode + '&-type=' + type).then(function(text) {
+            return self.parseCapability(text);
+        }).catch(function() {
+            return [];
+        });
+    },
+
+    /**
+     * Get all current settings
+     */
+    getAllSettings: function() {
+        var self = this;
+        return Promise.all([
+            self.getCommonParam('AUDIO').catch(function() { return '1'; }),
+            self.getCommonParam('VOLUME').catch(function() { return 'MIDDLE'; }),
+            self.getCommonParam('GSR_SENSITIVITY').catch(function() { return 'MIDDLE'; }),
+            self.getCommonParam('SPEECH').catch(function() { return '1'; }),
+            self.getCameraParam('Rec_Split_Time').catch(function() { return '3MIN'; }),
+            self.getCameraParam('MEDIAMODE').catch(function() { return '1080P'; })
+        ]).then(function(results) {
+            return {
+                audio: results[0],
+                volume: results[1],
+                gsrSensitivity: results[2],
+                speech: results[3],
+                recSplitTime: results[4],
+                mediaMode: results[5]
+            };
+        });
     }
 };
 

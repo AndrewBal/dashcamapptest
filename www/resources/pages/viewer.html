@@ -274,6 +274,7 @@
                 type: '',
                 filename: '',
                 fileUrl: '',
+                filePath: '',
                 thumbnailUrl: '',
                 isPhoto: false,
                 formattedDate: '',
@@ -307,6 +308,11 @@
                     DASHCAM_API.getFileUrl(dir, self.filename) :
                     DASHCAM_API.baseUrl + '/sd//' + dir + '/' + self.filename;
                 
+                // Build file path for delete operation
+                self.filePath = DASHCAM_API.buildFilePath ?
+                    DASHCAM_API.buildFilePath(dir, self.filename) :
+                    'sd//' + dir + '/' + self.filename;
+                
                 // Build thumbnail URL for videos (.TS -> .THM)
                 if (!self.isPhoto) {
                     self.thumbnailUrl = self.fileUrl.replace(/\.(TS|ts)$/i, '.THM');
@@ -319,6 +325,7 @@
                     type: self.type,
                     filename: self.filename,
                     fileUrl: self.fileUrl,
+                    filePath: self.filePath,
                     thumbnailUrl: self.thumbnailUrl,
                     isPhoto: self.isPhoto,
                     formattedDate: self.formattedDate,
@@ -329,6 +336,7 @@
                     type: self.type,
                     filename: self.filename,
                     fileUrl: self.fileUrl,
+                    filePath: self.filePath,
                     isPhoto: self.isPhoto
                 });
             },
@@ -577,12 +585,33 @@
                     'Delete this file? This cannot be undone.',
                     'Delete',
                     function() {
-                        // TODO: Implement delete API
-                        self.$app.toast.show({
-                            text: 'Delete API not implemented yet',
-                            position: 'center',
-                            closeTimeout: 2000
-                        });
+                        // Show loading indicator
+                        self.$app.preloader.show();
+                        
+                        // Call delete API
+                        DASHCAM_API.deleteFile(self.filePath)
+                            .then(function(success) {
+                                self.$app.preloader.hide();
+                                
+                                self.$app.toast.show({
+                                    text: 'File deleted successfully',
+                                    position: 'center',
+                                    closeTimeout: 2000
+                                });
+                                
+                                // Navigate back to gallery
+                                self.$app.views.main.router.back();
+                            })
+                            .catch(function(error) {
+                                self.$app.preloader.hide();
+                                console.error('[Viewer] Delete error:', error);
+                                
+                                self.$app.toast.show({
+                                    text: 'Failed to delete file',
+                                    position: 'center',
+                                    closeTimeout: 2000
+                                });
+                            });
                     }
                 );
             },

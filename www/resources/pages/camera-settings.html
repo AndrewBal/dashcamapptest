@@ -15,6 +15,15 @@
 
         <!-- Page Content -->
         <div class="page-content">
+            <!-- Loading indicator -->
+            {{#if isLoading}}
+            <div class="block text-align-center">
+                <div class="preloader"></div>
+                <p>Loading settings...</p>
+            </div>
+            {{/if}}
+
+            {{#unless isLoading}}
             <!-- Recording -->
             <div class="block-title">Recording</div>
             <div class="list">
@@ -28,7 +37,7 @@
                                 <div class="item-title">Sound Recording</div>
                                 <div class="item-after">
                                     <label class="toggle toggle-init color-theme">
-                                        <input type="checkbox" checked>
+                                        <input type="checkbox" id="toggle-audio" {{#if audioEnabled}}checked{{/if}} @change="toggleAudio">
                                         <span class="toggle-icon"></span>
                                     </label>
                                 </div>
@@ -36,13 +45,24 @@
                         </div>
                     </li>
                     <li>
-                        <a href="#" class="item-link item-content" @click="showPicker('resolution')">
+                        <a href="#" class="item-link item-content" @click="showPicker('mediaMode')">
                             <div class="item-media">
                                 <i class="f7-icons color-lightgray icon-resolution size-21"></i>
                             </div>
                             <div class="item-inner">
                                 <div class="item-title">Resolution</div>
-                                <div class="item-after">{{Resolution}}</div>
+                                <div class="item-after">{{mediaMode}}</div>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="item-link item-content" @click="showPicker('recSplitTime')">
+                            <div class="item-media">
+                                <i class="f7-icons color-lightgray size-21">timer</i>
+                            </div>
+                            <div class="item-inner">
+                                <div class="item-title">Video Length</div>
+                                <div class="item-after">{{recSplitTimeDisplay}}</div>
                             </div>
                         </a>
                     </li>
@@ -54,11 +74,11 @@
             <div class="list">
                 <ul>
                     <li>
-                        <a href="#" class="item-link item-content" @click="showPicker('sensitivity')">
+                        <a href="#" class="item-link item-content" @click="showPicker('gsrSensitivity')">
                             <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-sensitivity"></i></div>
                             <div class="item-inner">
                                 <div class="item-title">Collision Sensitivity</div>
-                                <div class="item-after">{{Sensitivity}}</div>
+                                <div class="item-after">{{gsrSensitivityDisplay}}</div>
                             </div>
                         </a>
                     </li>
@@ -76,12 +96,54 @@
                                 <div class="item-title">Voice Prompt</div>
                                 <div class="item-after">
                                     <label class="toggle toggle-init color-theme">
-                                        <input type="checkbox" checked>
+                                        <input type="checkbox" id="toggle-speech" {{#if speechEnabled}}checked{{/if}} @change="toggleSpeech">
                                         <span class="toggle-icon"></span>
                                     </label>
                                 </div>
                             </div>
                         </div>
+                    </li>
+                    <li>
+                        <a href="#" class="item-link item-content" @click="showPicker('volume')">
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21">speaker_2</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Volume</div>
+                                <div class="item-after">{{volumeDisplay}}</div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- WiFi -->
+            <div class="block-title">WiFi</div>
+            <div class="list">
+                <ul>
+                    <li>
+                        <div class="item-content">
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21">wifi</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Network Name</div>
+                                <div class="item-after">{{wifiSSID}}</div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="item-content">
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21">antenna_radiowaves_left_right</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Channel</div>
+                                <div class="item-after">{{wifiChannel}}</div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="#" class="item-link item-content" @click="changeWifiPassword">
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21">lock</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Change Password</div>
+                            </div>
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -91,10 +153,19 @@
             <div class="list">
                 <ul>
                     <li>
-                        <a href="#" class="item-link item-content" @click="formatCard">
+                        <div class="item-content">
                             <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-card"></i></div>
                             <div class="item-inner">
-                                <div class="item-title">Format TF Card</div>
+                                <div class="item-title">SD Card</div>
+                                <div class="item-after">{{sdInfo}}</div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="#" class="item-link item-content" @click="formatCard">
+                            <div class="item-media"><i class="f7-icons color-lightgray size-21">trash</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Format SD Card</div>
                             </div>
                         </a>
                     </li>
@@ -113,17 +184,32 @@
                             </div>
                         </a>
                     </li>
+                </ul>
+            </div>
+
+            <!-- Device Info -->
+            <div class="block-title">Device Info</div>
+            <div class="list">
+                <ul>
                     <li>
-                        <a href="#" class="item-link item-content" @click="showPicker('language')">
-                            <div class="item-media"><i class="f7-icons color-lightgray size-21 icon-language"></i></div>
+                        <div class="item-content">
                             <div class="item-inner">
-                                <div class="item-title">Language</div>
-                                <div class="item-after">{{Language}}</div>
+                                <div class="item-title">Model</div>
+                                <div class="item-after">{{deviceModel}}</div>
                             </div>
-                        </a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="item-content">
+                            <div class="item-inner">
+                                <div class="item-title">Firmware</div>
+                                <div class="item-after">{{deviceFirmware}}</div>
+                            </div>
+                        </div>
                     </li>
                 </ul>
             </div>
+            {{/unless}}
         </div>
     </div>
 </template>
@@ -132,71 +218,404 @@
     return {
         data: function () {
             return {
-                Resolution: '1080P',
-                Sensitivity: 'Medium',
-                Language: 'English'
+                isLoading: true,
+                settingsMode: false,
+                
+                // Recording
+                audioEnabled: true,
+                mediaMode: '1080P',
+                recSplitTime: '3MIN',
+                
+                // Safety
+                gsrSensitivity: 'MIDDLE',
+                
+                // Audio
+                speechEnabled: true,
+                volume: 'MIDDLE',
+                
+                // Storage
+                sdFree: 0,
+                sdTotal: 0,
+                
+                // Device Info
+                deviceModel: '-',
+                deviceFirmware: '-',
+                wifiSSID: '-',
+                wifiChannel: '-',
+                
+                // Capabilities (available options)
+                capabilities: {
+                    mediaMode: ['1080P', '2K+1080P'],
+                    recSplitTime: ['1MIN', '3MIN', '5MIN'],
+                    gsrSensitivity: ['OFF', 'LOW', 'MIDDLE', 'HIGH'],
+                    volume: ['MUTE', 'LOW', 'MIDDLE', 'HIGH']
+                }
             };
         },
+        
+        computed: {
+            sdInfo: function() {
+                if (this.sdTotal === 0) return 'No card';
+                var freeGB = (this.sdFree / 1024).toFixed(1);
+                var totalGB = (this.sdTotal / 1024).toFixed(1);
+                return freeGB + ' / ' + totalGB + ' GB';
+            },
+            recSplitTimeDisplay: function() {
+                var map = { '1MIN': '1 min', '3MIN': '3 min', '5MIN': '5 min' };
+                return map[this.recSplitTime] || this.recSplitTime;
+            },
+            gsrSensitivityDisplay: function() {
+                var map = { 'OFF': 'Off', 'LOW': 'Low', 'MIDDLE': 'Medium', 'HIGH': 'High' };
+                return map[this.gsrSensitivity] || this.gsrSensitivity;
+            },
+            volumeDisplay: function() {
+                var map = { 'MUTE': 'Mute', 'LOW': 'Low', 'MIDDLE': 'Medium', 'HIGH': 'High' };
+                return map[this.volume] || this.volume;
+            }
+        },
+        
+        on: {
+            pageInit: function() {
+                var self = this;
+                self.enterSettingsAndLoad();
+            },
+            pageBeforeRemove: function() {
+                var self = this;
+                self.exitSettingsMode();
+            }
+        },
+        
         methods: {
-            showPicker: function (type) {
+            enterSettingsAndLoad: function() {
+                var self = this;
+                
+                // Enter settings mode first (stops recording)
+                if (window.DASHCAM_API) {
+                    DASHCAM_API.enterSettingsMode()
+                        .then(function() {
+                            self.settingsMode = true;
+                            console.log('[Settings] Entered settings mode');
+                            return self.loadAllSettings();
+                        })
+                        .catch(function(err) {
+                            console.warn('[Settings] Could not enter settings mode:', err);
+                            // Still try to load settings
+                            return self.loadAllSettings();
+                        });
+                } else {
+                    self.$setState({ isLoading: false });
+                }
+            },
+            
+            exitSettingsMode: function() {
+                var self = this;
+                if (self.settingsMode && window.DASHCAM_API) {
+                    DASHCAM_API.exitSettingsMode()
+                        .then(function() {
+                            console.log('[Settings] Exited settings mode, recording resumed');
+                        })
+                        .catch(function(err) {
+                            console.warn('[Settings] Could not exit settings mode:', err);
+                        });
+                }
+            },
+            
+            loadAllSettings: function() {
+                var self = this;
+                
+                if (!window.DASHCAM_API) {
+                    self.$setState({ isLoading: false });
+                    return Promise.resolve();
+                }
+                
+                return Promise.all([
+                    // Common params
+                    DASHCAM_API.getCommonParam('AUDIO').catch(function() { return '1'; }),
+                    DASHCAM_API.getCommonParam('VOLUME').catch(function() { return 'MIDDLE'; }),
+                    DASHCAM_API.getCommonParam('GSR_SENSITIVITY').catch(function() { return 'MIDDLE'; }),
+                    DASHCAM_API.getCommonParam('SPEECH').catch(function() { return '1'; }),
+                    
+                    // Camera params
+                    DASHCAM_API.getCameraParam('Rec_Split_Time').catch(function() { return '3MIN'; }),
+                    DASHCAM_API.getCameraParam('MEDIAMODE').catch(function() { return '1080P'; }),
+                    
+                    // Device info
+                    DASHCAM_API.getDeviceInfo().catch(function() { return {}; }),
+                    DASHCAM_API.getSDStatus().catch(function() { return {}; }),
+                    DASHCAM_API.getWifiInfo().catch(function() { return {}; }),
+                    
+                    // Capabilities
+                    DASHCAM_API.getCommonParamCapability('GSR_SENSITIVITY').catch(function() { return []; }),
+                    DASHCAM_API.getCommonParamCapability('VOLUME').catch(function() { return []; }),
+                    DASHCAM_API.getCameraParamCapability('Rec_Split_Time').catch(function() { return []; }),
+                    DASHCAM_API.getCameraParamCapability('MEDIAMODE').catch(function() { return []; })
+                ]).then(function(results) {
+                    var deviceInfo = results[6] || {};
+                    var sdStatus = results[7] || {};
+                    var wifiInfo = results[8] || {};
+                    
+                    // Update capabilities if received
+                    var caps = self.capabilities;
+                    if (results[9] && results[9].length) caps.gsrSensitivity = results[9];
+                    if (results[10] && results[10].length) caps.volume = results[10];
+                    if (results[11] && results[11].length) caps.recSplitTime = results[11];
+                    if (results[12] && results[12].length) caps.mediaMode = results[12];
+                    
+                    self.$setState({
+                        isLoading: false,
+                        audioEnabled: results[0] === '1' || results[0] === 1,
+                        volume: results[1] || 'MIDDLE',
+                        gsrSensitivity: results[2] || 'MIDDLE',
+                        speechEnabled: results[3] === '1' || results[3] === 1,
+                        recSplitTime: results[4] || '3MIN',
+                        mediaMode: results[5] || '1080P',
+                        deviceModel: deviceInfo.model || deviceInfo.product || '-',
+                        deviceFirmware: deviceInfo.softversion || '-',
+                        wifiSSID: wifiInfo.wifissid || '-',
+                        wifiChannel: wifiInfo.wifichannel || '-',
+                        sdFree: parseInt(sdStatus.sdfreespace) || 0,
+                        sdTotal: parseInt(sdStatus.sdtotalspace) || 0,
+                        capabilities: caps
+                    });
+                    
+                    console.log('[Settings] Loaded all settings');
+                }).catch(function(err) {
+                    console.error('[Settings] Error loading settings:', err);
+                    self.$setState({ isLoading: false });
+                });
+            },
+            
+            toggleAudio: function(e) {
+                var self = this;
+                var enabled = e.target.checked;
+                var value = enabled ? '1' : '0';
+                
+                self.showSettingProgress();
+                
+                DASHCAM_API.setCommonParam('AUDIO', value)
+                    .then(function() {
+                        self.$setState({ audioEnabled: enabled });
+                        self.showSettingSuccess('Sound recording ' + (enabled ? 'enabled' : 'disabled'));
+                    })
+                    .catch(function(err) {
+                        // Revert toggle
+                        e.target.checked = !enabled;
+                        self.showSettingError('Failed to change audio setting');
+                    });
+            },
+            
+            toggleSpeech: function(e) {
+                var self = this;
+                var enabled = e.target.checked;
+                var value = enabled ? '1' : '0';
+                
+                self.showSettingProgress();
+                
+                DASHCAM_API.setCommonParam('SPEECH', value)
+                    .then(function() {
+                        self.$setState({ speechEnabled: enabled });
+                        self.showSettingSuccess('Voice prompt ' + (enabled ? 'enabled' : 'disabled'));
+                    })
+                    .catch(function(err) {
+                        e.target.checked = !enabled;
+                        self.showSettingError('Failed to change voice setting');
+                    });
+            },
+            
+            showPicker: function(type) {
                 var self = this;
                 var options = [];
                 var current = '';
-
-                if (type === 'resolution') {
-                    options = ['720P', '1080P'];
-                    current = self.Resolution;
-                } else if (type === 'sensitivity') {
-                    options = ['Low', 'Medium', 'High'];
-                    current = self.Sensitivity;
-                } else if (type === 'language') {
-                    options = ['English', 'Chinese'];
-                    current = self.Language;
+                var title = '';
+                var apiType = '';
+                var isCommon = true;
+                
+                var displayMap = {
+                    gsrSensitivity: { 'OFF': 'Off', 'LOW': 'Low', 'MIDDLE': 'Medium', 'HIGH': 'High' },
+                    volume: { 'MUTE': 'Mute', 'LOW': 'Low', 'MIDDLE': 'Medium', 'HIGH': 'High' },
+                    recSplitTime: { '1MIN': '1 minute', '3MIN': '3 minutes', '5MIN': '5 minutes' },
+                    mediaMode: {}
+                };
+                
+                if (type === 'mediaMode') {
+                    title = 'Resolution';
+                    options = self.capabilities.mediaMode;
+                    current = self.mediaMode;
+                    apiType = 'MEDIAMODE';
+                    isCommon = false;
+                } else if (type === 'recSplitTime') {
+                    title = 'Video Length';
+                    options = self.capabilities.recSplitTime;
+                    current = self.recSplitTime;
+                    apiType = 'Rec_Split_Time';
+                    isCommon = false;
+                } else if (type === 'gsrSensitivity') {
+                    title = 'Collision Sensitivity';
+                    options = self.capabilities.gsrSensitivity;
+                    current = self.gsrSensitivity;
+                    apiType = 'GSR_SENSITIVITY';
+                } else if (type === 'volume') {
+                    title = 'Volume';
+                    options = self.capabilities.volume;
+                    current = self.volume;
+                    apiType = 'VOLUME';
                 }
-
-                var buttons = options.map(function (opt) {
+                
+                var map = displayMap[type] || {};
+                
+                var buttons = options.map(function(opt) {
                     return {
-                        text: opt,
+                        text: map[opt] || opt,
                         bold: opt === current,
-                        onClick: function () {
-                            if (type === 'resolution') self.$setState({ Resolution: opt });
-                            else if (type === 'sensitivity') self.$setState({ Sensitivity: opt });
-                            else if (type === 'language') self.$setState({ Language: opt });
-
-                            self.$app.toast.show({
-                                text: 'Setting updated',
-                                position: 'center',
-                                closeTimeout: 1500
+                        onClick: function() {
+                            if (opt === current) return;
+                            
+                            self.showSettingProgress();
+                            
+                            var promise = isCommon 
+                                ? DASHCAM_API.setCommonParam(apiType, opt)
+                                : DASHCAM_API.setCameraParam(apiType, opt);
+                            
+                            promise.then(function() {
+                                var state = {};
+                                state[type] = opt;
+                                self.$setState(state);
+                                self.showSettingSuccess('Setting updated');
+                            }).catch(function(err) {
+                                self.showSettingError('Failed to update setting');
                             });
                         }
                     };
                 });
-
+                
                 buttons.push({ text: 'Cancel', color: 'red' });
-
+                
                 self.$app.dialog.create({
-                    title: type.charAt(0).toUpperCase() + type.slice(1),
+                    title: title,
                     buttons: buttons,
                     verticalButtons: true
                 }).open();
             },
-            formatCard: function () {
+            
+            formatCard: function() {
                 var self = this;
-                self.$app.dialog.confirm('Format TF card? All data will be erased.', 'Warning', function () {
-                    self.$app.toast.show({
-                        text: 'Format command sent',
-                        position: 'center',
-                        closeTimeout: 2000
+                
+                self.$app.dialog.confirm(
+                    'Format SD card? All recordings will be permanently erased.',
+                    'Warning',
+                    function() {
+                        self.$app.dialog.preloader('Formatting...');
+                        
+                        DASHCAM_API.formatSDCard()
+                            .then(function() {
+                                self.$app.dialog.close();
+                                self.$app.toast.show({
+                                    text: 'SD card formatted successfully',
+                                    position: 'center',
+                                    closeTimeout: 2000
+                                });
+                                // Reload SD info
+                                return DASHCAM_API.getSDStatus();
+                            })
+                            .then(function(status) {
+                                self.$setState({
+                                    sdFree: parseInt(status.sdfreespace) || 0,
+                                    sdTotal: parseInt(status.sdtotalspace) || 0
+                                });
+                            })
+                            .catch(function(err) {
+                                self.$app.dialog.close();
+                                self.$app.dialog.alert('Failed to format SD card', 'Error');
+                            });
+                    }
+                );
+            },
+            
+            syncTime: function() {
+                var self = this;
+                
+                self.showSettingProgress();
+                
+                DASHCAM_API.syncTime()
+                    .then(function() {
+                        var now = new Date();
+                        var timeStr = now.toLocaleTimeString();
+                        self.showSettingSuccess('Time synced: ' + timeStr);
+                    })
+                    .catch(function(err) {
+                        self.showSettingError('Failed to sync time');
                     });
+            },
+            
+            changeWifiPassword: function() {
+                var self = this;
+                
+                self.$app.dialog.prompt(
+                    'Enter new WiFi password (min 8 characters). You will need to reconnect after changing.',
+                    'Change WiFi Password',
+                    function(password) {
+                        // Validate
+                        if (!password || password.length < 8) {
+                            self.$app.dialog.alert('Password must be at least 8 characters', 'Error');
+                            return;
+                        }
+                        
+                        // Confirm
+                        self.$app.dialog.confirm(
+                            'Change WiFi password to "' + password + '"?\n\nYou will be disconnected and need to reconnect with the new password.',
+                            'Confirm',
+                            function() {
+                                self.$app.dialog.preloader('Changing password...');
+                                
+                                DASHCAM_API.setWifiPassword(password)
+                                    .then(function() {
+                                        self.$app.dialog.close();
+                                        self.$app.dialog.alert(
+                                            'Password changed successfully!\n\nPlease reconnect to WiFi "' + self.wifiSSID + '" with the new password.',
+                                            'Success'
+                                        );
+                                    })
+                                    .catch(function(err) {
+                                        self.$app.dialog.close();
+                                        self.$app.dialog.alert('Failed to change password: ' + err, 'Error');
+                                    });
+                            }
+                        );
+                    },
+                    function() {
+                        // Cancelled
+                    },
+                    '' // Default value
+                );
+            },
+            
+            showSettingProgress: function() {
+                this.$app.toast.show({
+                    text: 'Updating...',
+                    position: 'center',
+                    closeTimeout: 1000
                 });
             },
-            syncTime: function () {
+            
+            showSettingSuccess: function(message) {
                 this.$app.toast.show({
-                    text: 'Time synced to device',
+                    text: message,
                     position: 'center',
-                    closeTimeout: 2000
+                    closeTimeout: 1500,
+                    cssClass: 'color-green'
+                });
+            },
+            
+            showSettingError: function(message) {
+                this.$app.toast.show({
+                    text: message,
+                    position: 'center',
+                    closeTimeout: 2000,
+                    cssClass: 'color-red'
                 });
             }
         }
     };
 </script>
+
+ 

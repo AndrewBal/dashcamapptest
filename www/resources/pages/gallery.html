@@ -85,7 +85,7 @@
                     <div class="gallery-grid">
                         {{#each LoopFiles}}
                         <div class="gallery-item {{#if selected}}selected{{/if}}" data-url="{{url}}"
-                            data-filename="{{filename}}" data-type="loop" data-index="{{@index}}">
+                            data-filename="{{filename}}" data-type="loop" data-index="{{@index}}" data-path="{{path}}">
                             <div class="item-thumb-placeholder">
                                 <i class="f7-icons">film</i>
                             </div>
@@ -120,7 +120,7 @@
                     <div class="gallery-grid">
                         {{#each LockedFiles}}
                         <div class="gallery-item {{#if selected}}selected{{/if}}" data-url="{{url}}"
-                            data-filename="{{filename}}" data-type="locked" data-index="{{@index}}">
+                            data-filename="{{filename}}" data-type="locked" data-index="{{@index}}" data-path="{{path}}">
                             <div class="item-thumb-placeholder">
                                 <i class="f7-icons">lock_fill</i>
                             </div>
@@ -155,7 +155,7 @@
                     <div class="gallery-grid">
                         {{#each SnapshotFiles}}
                         <div class="gallery-item {{#if selected}}selected{{/if}}" data-url="{{url}}"
-                            data-filename="{{filename}}" data-type="snapshot" data-index="{{@index}}">
+                            data-filename="{{filename}}" data-type="snapshot" data-index="{{@index}}" data-path="{{path}}">
                             <div class="item-thumb-placeholder">
                                 <i class="f7-icons">photo</i>
                             </div>
@@ -192,75 +192,9 @@
                 CameraFilter: 'front',
                 isFrontCamera: true,
                 isRearCamera: false,
-                LoopFiles: [
-                    {
-                        NAME: 'LOOP_20250129_143025_A.MP4',
-                        FPATH: '/mnt/sd/DCIM/Movie/',
-                        SIZE: '52428800',
-                        TIME: '1706535025',
-                        ATTR: '32'
-                    },
-                    {
-                        NAME: 'LOOP_20250129_142512_A.MP4',
-                        FPATH: '/mnt/sd/DCIM/Movie/',
-                        SIZE: '48576512',
-                        TIME: '1706534712',
-                        ATTR: '32'
-                    },
-                    {
-                        NAME: 'LOOP_20250129_141958_A.MP4',
-                        FPATH: '/mnt/sd/DCIM/Movie/',
-                        SIZE: '55123456',
-                        TIME: '1706534398',
-                        ATTR: '32'
-                    },
-                    {
-                        NAME: 'LOOP_20250128_180030_A.MP4',
-                        FPATH: '/mnt/sd/DCIM/Movie/',
-                        SIZE: '51234567',
-                        TIME: '1706457630',
-                        ATTR: '32'
-                    }
-                    ],
-LockedFiles: [
-    {
-        NAME: 'LOCK_20250129_120015_A.MP4',
-        FPATH: '/mnt/sd/DCIM/EMR/',
-        SIZE: '62914560',
-        TIME: '1706526015',
-        ATTR: '32'
-    },
-    {
-        NAME: 'LOCK_20250127_093045_A.MP4',
-        FPATH: '/mnt/sd/DCIM/EMR/',
-        SIZE: '58720256',
-        TIME: '1706345445',
-        ATTR: '32'
-    }
-],
-SnapshotFiles: [
-    {
-        NAME: 'SNAP_20250129_150000_A.JPG',
-        FPATH: '/mnt/sd/DCIM/Photo/',
-        SIZE: '2097152',
-        TIME: '1706536800',
-        ATTR: '32'
-    },
-    {
-        NAME: 'SNAP_20250129_144530_A.JPG',
-        FPATH: '/mnt/sd/DCIM/Photo/',
-        SIZE: '1835008',
-        TIME: '1706535930',
-        ATTR: '32'
-    },
-    {
-        NAME: 'SNAP_20250128_110000_A.JPG',
-        FPATH: '/mnt/sd/DCIM/Photo/',
-        SIZE: '2150400',
-        TIME: '1706432400',
-        ATTR: '32'
-    }
-],
+                LoopFiles: [],
+                LockedFiles: [],
+                SnapshotFiles: [],
                 hasLoopFiles: false,
                 hasLockedFiles: false,
                 hasSnapshotFiles: false,
@@ -496,14 +430,55 @@ SnapshotFiles: [
                     'Delete ' + selected.length + ' file(s)? This cannot be undone.',
                     'Delete',
                     function () {
-                        // TODO: Implement delete API
-                        self.$app.toast.show({
-                            text: 'Delete API not implemented yet',
-                            position: 'center',
-                            closeTimeout: 2000
+                        // Show progress dialog
+                        var progressDialog = self.$app.dialog.progress(
+                            'Deleting files...',
+                            0
+                        );
+
+                        // Extract file objects for deletion
+                        var filesToDelete = selected.map(function(item) {
+                            return item.file;
                         });
 
-                        self.cancelSelection();
+                        // Delete files with progress callback
+                        DASHCAM_API.deleteFiles(filesToDelete, function(current, total, filename) {
+                            var percent = Math.round((current / total) * 100);
+                            progressDialog.setProgress(percent);
+                            progressDialog.setText('Deleting ' + current + '/' + total + ': ' + filename);
+                        }).then(function(results) {
+                            progressDialog.close();
+
+                            // Show results
+                            var message = '';
+                            if (results.success > 0) {
+                                message += results.success + ' file(s) deleted successfully.';
+                            }
+                            if (results.failed > 0) {
+                                message += '\n' + results.failed + ' file(s) failed to delete.';
+                            }
+
+                            self.$app.toast.show({
+                                text: message,
+                                position: 'center',
+                                closeTimeout: 3000
+                            });
+
+                            // Refresh gallery to show updated file list
+                            self.cancelSelection();
+                            self.loadAllFiles();
+                        }).catch(function(err) {
+                            progressDialog.close();
+                            console.error('Delete operation failed:', err);
+                            
+                            self.$app.toast.show({
+                                text: 'Delete operation failed',
+                                position: 'center',
+                                closeTimeout: 2000
+                            });
+                            
+                            self.cancelSelection();
+                        });
                     }
                 );
             },
